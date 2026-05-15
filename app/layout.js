@@ -1,6 +1,7 @@
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import PageTracker from '@/components/PageTracker'
 
 export const metadata = {
   title: 'DKAMPUNG – Kuih Tradisional Terbaik',
@@ -13,6 +14,7 @@ export default function RootLayout({ children }) {
     <html lang="ms">
       <body>
         <Navbar />
+        <PageTracker />
         <main>{children}</main>
         <Footer />
       </body>

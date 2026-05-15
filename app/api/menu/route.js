@@ -1,0 +1,40 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
+function auth(request) {
+  const h = request.headers.get('Authorization') || ''
+  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
+}
+
+export async function GET() {
+  const { data, error } = await supabase
+    .from('menu_items')
+    .select('*')
+    .eq('is_available', true)
+    .order('category_id')
+    .order('sort_order')
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ items: data || [] })
+}
+
+export async function POST(request) {
+  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await request.json()
+  const { category_id, category_name, category_emoji, name, description, price, min_order, image_url } = body
+
+  const { data, error } = await supabase
+    .from('menu_items')
+    .insert([{ category_id, category_name, category_emoji, name, description, price: parseFloat(price), min_order: min_order || 50, image_url: image_url || null }])
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ item: data }, { status: 201 })
+}
