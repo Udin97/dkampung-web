@@ -905,6 +905,7 @@ export default function AdminPage() {
   const [pw, setPw]   = useState(null)
   const [tab, setTab] = useState('overview')
   const [tick, setTick] = useState(0)
+  const [now, setNow] = useState(new Date())
   const bump = useCallback(() => setTick(t => t + 1), [])
 
   useEffect(() => {
@@ -912,6 +913,11 @@ export default function AdminPage() {
     if (!saved) return
     fetch('/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: saved }) })
       .then(r => { if (r.ok) setPw(saved) })
+  }, [])
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
   }, [])
 
   if (!pw) return <LoginScreen onLogin={setPw} />
@@ -962,14 +968,53 @@ export default function AdminPage() {
       {/* ── Main content ── */}
       <div className="ml-14 md:ml-[220px] min-h-screen">
         {/* Top header bar */}
-        <div className="bg-white border-b border-brown/8 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-          <div>
-            <h1 className="font-fraunces font-bold text-charcoal">{activeTab?.label}</h1>
-            <p className="text-muted text-xs mt-0.5">
-              {new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+        <div className="sticky top-0 z-10 h-[52px] flex items-center justify-between px-5
+          bg-charcoal/[0.96] backdrop-blur-2xl border-b border-white/[0.055]"
+          style={{ boxShadow: '0 1px 0 rgba(201,168,76,0.07), 0 6px 28px rgba(0,0,0,0.28)' }}>
+
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="hidden sm:block text-[0.58rem] font-mono font-bold tracking-[3.5px] uppercase text-gold/25 shrink-0 select-none">
+              DKAMPUNG
+            </span>
+            <svg className="hidden sm:block w-3 h-3 text-white/10 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-gold/50 shrink-0 opacity-70" style={{ transform: 'scale(0.78)', transformOrigin: 'center' }}>{ICONS[tab]}</span>
+              <span className="text-cream/80 text-[0.8rem] font-semibold tracking-wide truncate">{activeTab?.label}</span>
+            </div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-forest text-cream font-bold text-sm flex items-center justify-center shadow-sm">A</div>
+
+          {/* Right controls */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Live clock */}
+            <div className="hidden sm:flex items-center gap-2 bg-white/[0.038] border border-white/[0.07] rounded-full px-3 py-[5px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="text-cream/40 text-[0.63rem] font-mono tabular-nums tracking-wider leading-none">
+                {now.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+              </span>
+            </div>
+
+            {/* Date */}
+            <span className="hidden lg:block text-cream/20 text-[0.6rem] font-mono tracking-wider uppercase">
+              {now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+            </span>
+
+            <div className="h-4 w-px bg-white/10" />
+
+            {/* Avatar with online dot */}
+            <div className="relative">
+              <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(201,168,76,0.9) 0%, rgba(201,168,76,0.55) 100%)',
+                  boxShadow: '0 0 0 1.5px rgba(201,168,76,0.28), 0 0 14px rgba(201,168,76,0.14)',
+                }}>
+                <span className="text-charcoal font-black text-[0.6rem] tracking-widest leading-none">A</span>
+              </div>
+              <span className="absolute -bottom-[1px] -right-[1px] w-[9px] h-[9px] rounded-full bg-emerald-400 border-[1.5px] border-charcoal" />
+            </div>
+          </div>
         </div>
 
         {/* Content */}
