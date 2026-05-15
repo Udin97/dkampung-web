@@ -45,29 +45,28 @@ const MENU = [
 
 function MenuCard({ item }) {
   return (
-    <div className="bg-cream rounded-2xl overflow-hidden border border-brown/8 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col">
-      {/* Image placeholder */}
-      <div className="h-44 bg-cream2 flex items-center justify-center relative overflow-hidden">
-        {item.image ? (
-          <Image src={item.image} alt={item.name} fill className="object-cover" />
-        ) : (
-          <span className="text-5xl opacity-25">📷</span>
-        )}
-      </div>
-      <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-fraunces font-semibold text-xl text-brown mb-1">{item.name}</h3>
-        <p className="text-muted text-sm leading-relaxed mb-4 flex-1">{item.desc}</p>
-        <div className="flex items-center justify-between mt-auto">
-          <div>
-            <span className="text-terra font-bold text-lg">RM {item.price.toFixed(2)}</span>
-            <span className="text-muted text-xs ml-1">/ biji</span>
-          </div>
-          {item.min > 1 && (
-            <span className="bg-forest/10 text-forest text-[0.65rem] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-full">
-              Min. {item.min} biji
-            </span>
+    <div className="flex items-center justify-between px-5 py-4 bg-white hover:bg-cream/60 transition-colors border-b border-brown/6 last:border-0">
+      <div className="flex items-start gap-4 flex-1 min-w-0">
+        {/* Image or placeholder */}
+        <div className="w-14 h-14 rounded-xl bg-cream2 flex items-center justify-center shrink-0 relative overflow-hidden">
+          {item.image ? (
+            <Image src={item.image} alt={item.name} fill className="object-cover rounded-xl" />
+          ) : (
+            <span className="text-2xl opacity-50">📷</span>
           )}
         </div>
+        <div className="min-w-0">
+          <h3 className="font-semibold text-brown text-sm leading-tight">{item.name}</h3>
+          <p className="text-muted text-xs leading-relaxed mt-0.5 line-clamp-2">{item.desc}</p>
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
+        <span className="text-terra font-bold text-sm">RM {item.price.toFixed(2)}</span>
+        {item.min > 1 && (
+          <span className="text-[0.6rem] font-semibold uppercase tracking-wide text-muted">
+            Min. {item.min}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -100,7 +99,7 @@ export default function MenuPage() {
               <h2 className="font-fraunces font-bold text-3xl text-forest">{cat.category}</h2>
               <div className="flex-1 h-px bg-brown/10 ml-4" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
               {cat.items.map(item => (
                 <MenuCard key={item.name} item={item} />
               ))}
