@@ -1,6 +1,6 @@
 import './globals.css'
 import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import FooterWrapper from '@/components/FooterWrapper'
 import PageTracker from '@/components/PageTracker'
 
 export const metadata = {
@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <PageTracker />
         <main>{children}</main>
-        <Footer />
+        <FooterWrapper />
       </body>
     </html>
   )

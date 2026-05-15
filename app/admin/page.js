@@ -1,8 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
+function parsePrice(notes) {
+  const m = notes?.match(/Anggaran: RM ([\d.]+)/)
+  return m ? parseFloat(m[1]) : null
+}
+
 function fmtDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -13,9 +18,10 @@ function safeHost(url) {
 }
 
 const STATUS_CLS = {
-  pending:   'bg-amber-50  text-amber-700  border-amber-200',
-  confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  cancelled: 'bg-red-50    text-red-600    border-red-200',
+  pending:          'bg-amber-50  text-amber-700  border-amber-200',
+  confirmed:        'bg-emerald-50 text-emerald-700 border-emerald-200',
+  ready_for_pickup: 'bg-teal-50   text-teal-700   border-teal-200',
+  cancelled:        'bg-red-50    text-red-600    border-red-200',
 }
 
 // ── SVG Charts ────────────────────────────────────────────────────────────────
@@ -52,14 +58,15 @@ function AreaChart({ data }) {
   )
 }
 
-function DonutChart({ pending, confirmed, cancelled }) {
-  const total = pending + confirmed + cancelled
+function DonutChart({ pending, confirmed, cancelled, readyForPickup = 0 }) {
+  const total = pending + confirmed + cancelled + readyForPickup
   const r = 36, cx = 50, cy = 50
   const circ = 2 * Math.PI * r
   const segs = [
-    { count: confirmed, color: '#10b981' },
-    { count: pending,   color: '#f59e0b' },
-    { count: cancelled, color: '#ef4444' },
+    { count: confirmed,        color: '#10b981' },
+    { count: readyForPickup,   color: '#0d9488' },
+    { count: pending,          color: '#f59e0b' },
+    { count: cancelled,        color: '#ef4444' },
   ]
   let acc = 0
   return (
@@ -212,10 +219,11 @@ const TABS = [
 ]
 
 // ── Overview ──────────────────────────────────────────────────────────────────
-function OverviewTab({ pw }) {
+function OverviewTab({ pw, refreshKey }) {
   const [d, setD] = useState(null)
 
   useEffect(() => {
+    setD(null)
     Promise.all([
       fetch('/api/reservations').then(r => r.json()),
       fetch('/api/analytics/stats', { headers: { Authorization: `Bearer ${pw}` } }).then(r => r.json()),
@@ -223,15 +231,19 @@ function OverviewTab({ pw }) {
     ]).then(([res, stats, menu]) =>
       setD({ reservations: res.reservations || [], visits: stats.visits || [], menuItems: menu.items || [] })
     )
-  }, [pw])
+  }, [pw, refreshKey])
 
   if (!d) return <Spinner />
 
-  const today     = new Date().toISOString().split('T')[0]
-  const todayV    = d.visits.filter(v => v.visited_at?.startsWith(today)).length
-  const pending   = d.reservations.filter(r => r.status === 'pending').length
-  const confirmed = d.reservations.filter(r => r.status === 'confirmed').length
-  const cancelled = d.reservations.filter(r => r.status === 'cancelled').length
+  const today          = new Date().toISOString().split('T')[0]
+  const todayV         = d.visits.filter(v => v.visited_at?.startsWith(today)).length
+  const pending        = d.reservations.filter(r => r.status === 'pending').length
+  const confirmed      = d.reservations.filter(r => r.status === 'confirmed').length
+  const cancelled      = d.reservations.filter(r => r.status === 'cancelled').length
+  const readyForPickup = d.reservations.filter(r => r.status === 'ready_for_pickup').length
+  const totalRevenue   = d.reservations
+    .filter(r => r.status === 'confirmed' || r.status === 'ready_for_pickup')
+    .reduce((sum, r) => sum + (parsePrice(r.notes) || 0), 0)
 
   const days = Array.from({ length: 14 }, (_, i) => {
     const dt = new Date(); dt.setDate(dt.getDate() - (13 - i))
@@ -257,6 +269,20 @@ function OverviewTab({ pw }) {
             <div className="text-muted text-xs mt-2 font-medium">{c.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Revenue card */}
+      <div className="bg-white rounded-2xl border border-brown/8 p-5 flex items-center justify-between">
+        <div>
+          <div className="text-muted text-xs mb-1 font-semibold uppercase tracking-wider">Anggaran Hasil</div>
+          <div className="font-fraunces font-black text-3xl text-forest">RM {totalRevenue.toFixed(2)}</div>
+          <div className="text-muted text-xs mt-1">{confirmed + readyForPickup} tempahan confirmed &amp; siap ambil</div>
+        </div>
+        <div className="w-14 h-14 bg-forest/8 rounded-2xl flex items-center justify-center shrink-0">
+          <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+          </svg>
+        </div>
       </div>
 
       {/* Charts */}
@@ -285,13 +311,14 @@ function OverviewTab({ pw }) {
           <p className="text-muted text-xs mb-5">Agihan mengikut status</p>
           <div className="flex-1 flex flex-col items-center justify-center gap-5">
             <div className="w-28 h-28">
-              <DonutChart pending={pending} confirmed={confirmed} cancelled={cancelled} />
+              <DonutChart pending={pending} confirmed={confirmed} cancelled={cancelled} readyForPickup={readyForPickup} />
             </div>
             <div className="w-full space-y-2.5">
               {[
-                { label: 'Disahkan', count: confirmed, dot: 'bg-emerald-400' },
-                { label: 'Pending',  count: pending,   dot: 'bg-amber-400'   },
-                { label: 'Dibatal',  count: cancelled, dot: 'bg-red-400'     },
+                { label: 'Disahkan',   count: confirmed,        dot: 'bg-emerald-400' },
+                { label: 'Siap Ambil', count: readyForPickup,   dot: 'bg-teal-500'    },
+                { label: 'Pending',    count: pending,          dot: 'bg-amber-400'   },
+                { label: 'Dibatal',    count: cancelled,        dot: 'bg-red-400'     },
               ].map(s => (
                 <div key={s.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -327,7 +354,7 @@ function OverviewTab({ pw }) {
               <div className="flex items-center gap-3">
                 <span className="text-forest font-bold text-sm">{r.pax} biji</span>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLS[r.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                  {r.status}
+                  {r.status === 'ready_for_pickup' ? 'Siap Ambil' : r.status}
                 </span>
               </div>
             </div>
@@ -342,7 +369,7 @@ function OverviewTab({ pw }) {
 }
 
 // ── Reservations ──────────────────────────────────────────────────────────────
-function ReservationsTab({ pw }) {
+function ReservationsTab({ pw, onStatusChange }) {
   const [rows, setRows]     = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -357,7 +384,7 @@ function ReservationsTab({ pw }) {
 
   useEffect(() => { load() }, [load])
 
-  const counts = { all: rows.length, pending: rows.filter(r => r.status === 'pending').length, confirmed: rows.filter(r => r.status === 'confirmed').length, cancelled: rows.filter(r => r.status === 'cancelled').length }
+  const counts = { all: rows.length, pending: rows.filter(r => r.status === 'pending').length, confirmed: rows.filter(r => r.status === 'confirmed').length, ready_for_pickup: rows.filter(r => r.status === 'ready_for_pickup').length, cancelled: rows.filter(r => r.status === 'cancelled').length }
   const shown = rows.filter(r => (filter === 'all' || r.status === filter) && (!search || r.name?.toLowerCase().includes(search.toLowerCase()) || r.phone?.includes(search)))
 
   async function setStatus(id, status) {
@@ -365,6 +392,7 @@ function ReservationsTab({ pw }) {
     await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ status }) })
     setRows(p => p.map(r => r.id === id ? { ...r, status } : r))
     if (detail?.id === id) setDetail(p => ({ ...p, status }))
+    onStatusChange?.()
     setBusy(null)
   }
 
@@ -399,7 +427,7 @@ function ReservationsTab({ pw }) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {[['Telefon',detail.phone],['Tarikh',detail.date],['Masa',detail.time],['Biji',`${detail.pax} biji`],['Cawangan',detail.branch],['Daftar',fmtDate(detail.created_at)]].map(([k,v]) => (
+              {[['Telefon',detail.phone],['Tarikh',detail.date],['Masa',detail.time],['Biji',`${detail.pax} biji`],['Anggaran', parsePrice(detail.notes) != null ? `RM ${parsePrice(detail.notes).toFixed(2)}` : '—'],['Cawangan',detail.branch],['Daftar',fmtDate(detail.created_at)]].map(([k,v]) => (
                 <div key={k}>
                   <div className="text-muted text-xs mb-0.5">{k}</div>
                   <div className="font-semibold text-charcoal text-sm">{v}</div>
@@ -417,6 +445,7 @@ function ReservationsTab({ pw }) {
                 className="flex-1 border border-brown/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30">
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
+                <option value="ready_for_pickup">Siap Ambil</option>
                 <option value="cancelled">Cancelled</option>
               </select>
               <button onClick={() => del(detail.id)}
@@ -431,7 +460,7 @@ function ReservationsTab({ pw }) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2 flex-wrap">
-          {[['all','Semua'],['pending','Pending'],['confirmed','Confirmed'],['cancelled','Cancelled']].map(([s,label]) => (
+          {[['all','Semua'],['pending','Pending'],['confirmed','Confirmed'],['ready_for_pickup','Siap Ambil'],['cancelled','Cancelled']].map(([s,label]) => (
             <button key={s} onClick={() => setFilter(s)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${filter === s ? 'bg-charcoal text-cream' : 'bg-white text-muted border border-brown/20 hover:border-brown/40'}`}>
               {label} ({counts[s] ?? 0})
@@ -477,13 +506,19 @@ function ReservationsTab({ pw }) {
                       <div className="font-medium text-charcoal">{r.date}</div>
                       <div className="text-muted text-xs">{r.time}</div>
                     </td>
-                    <td className="px-5 py-3.5 font-bold text-forest">{r.pax} biji</td>
+                    <td className="px-5 py-3.5">
+                      <div className="font-bold text-forest">{r.pax} biji</div>
+                      {parsePrice(r.notes) != null && (
+                        <div className="text-xs text-muted">RM {parsePrice(r.notes).toFixed(2)}</div>
+                      )}
+                    </td>
                     <td className="px-5 py-3.5 text-muted text-xs max-w-[130px] truncate">{r.branch}</td>
                     <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
                       <select value={r.status} onChange={e => setStatus(r.id, e.target.value)} disabled={busy === r.id}
                         className={`text-xs font-semibold px-2 py-1 rounded-full border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_CLS[r.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                         <option value="pending">pending</option>
                         <option value="confirmed">confirmed</option>
+                        <option value="ready_for_pickup">siap ambil</option>
                         <option value="cancelled">cancelled</option>
                       </select>
                     </td>
@@ -869,6 +904,8 @@ function AnalyticsTab({ pw }) {
 export default function AdminPage() {
   const [pw, setPw]   = useState(null)
   const [tab, setTab] = useState('overview')
+  const [tick, setTick] = useState(0)
+  const bump = useCallback(() => setTick(t => t + 1), [])
 
   useEffect(() => {
     const saved = sessionStorage.getItem('adminPw')
@@ -884,7 +921,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
       {/* ── Sidebar ── */}
-      <aside className="fixed left-0 top-[68px] bottom-0 w-14 md:w-[220px] bg-charcoal flex flex-col z-20">
+      <aside className="fixed left-0 top-0 bottom-0 w-14 md:w-[220px] bg-charcoal flex flex-col z-20">
         {/* Brand */}
         <div className="px-4 py-5 border-b border-white/8">
           <div className="hidden md:block">
@@ -923,9 +960,9 @@ export default function AdminPage() {
       </aside>
 
       {/* ── Main content ── */}
-      <div className="ml-14 md:ml-[220px] min-h-screen pt-[68px]">
+      <div className="ml-14 md:ml-[220px] min-h-screen">
         {/* Top header bar */}
-        <div className="bg-white border-b border-brown/8 px-6 py-4 flex items-center justify-between sticky top-[68px] z-10">
+        <div className="bg-white border-b border-brown/8 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h1 className="font-fraunces font-bold text-charcoal">{activeTab?.label}</h1>
             <p className="text-muted text-xs mt-0.5">
@@ -937,8 +974,8 @@ export default function AdminPage() {
 
         {/* Content */}
         <div className="p-6">
-          {tab === 'overview'     && <OverviewTab     pw={pw} />}
-          {tab === 'reservations' && <ReservationsTab pw={pw} />}
+          {tab === 'overview'     && <OverviewTab     pw={pw} refreshKey={tick} />}
+          {tab === 'reservations' && <ReservationsTab pw={pw} onStatusChange={bump} />}
           {tab === 'menu'         && <MenuTab         pw={pw} />}
           {tab === 'content'      && <ContentTab      pw={pw} />}
           {tab === 'analytics'    && <AnalyticsTab    pw={pw} />}
