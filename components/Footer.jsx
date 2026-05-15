@@ -8,9 +8,9 @@ const LINKS = [
 ]
 
 const BRANCHES = [
-  'Dapur Kampung Putra Perdana',
-  'Dapur Kampung Cyberjaya',
-  'Nasi Lemak Che Dil Cyberjaya',
+  'Taman Putra Perdana',
+  'Cyberjaya',
+  'Kota Warisan',
 ]
 
 export default function Footer() {
@@ -35,7 +35,7 @@ export default function Footer() {
               </a>
               <a href="https://wa.me/60143860742" target="_blank" rel="noopener noreferrer"
                 className="text-sm text-cream/45 hover:text-gold transition-colors w-fit">
-                WhatsApp Said Hashim
+                WhatsApp Gion Master
               </a>
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function Footer() {
             <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-5">Operasi</div>
             <div className="text-sm text-cream/40 leading-relaxed">
               <p>Isnin – Ahad</p>
-              <p className="text-cream/70 font-semibold mt-1">8:00 pagi – Petang</p>
+              <p className="text-cream/70 font-semibold mt-1">7:00 pagi – 11:00 malam</p>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[0.7rem] text-cream/25 tracking-wide">
-            © 2025 DKAMPUNG · Said Hashim · Semua hak terpelihara
+            © 2025 DKAMPUNG · Gion Master · Semua hak terpelihara
           </p>
           <div className="flex items-center gap-2">
             {['Halal ✓', 'Segar Harian', 'Buatan Tangan'].map(b => (

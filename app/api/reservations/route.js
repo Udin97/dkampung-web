@@ -61,10 +61,9 @@ export async function POST(request) {
                 ['Nama',      name],
                 ['Tarikh',    date],
                 ['Masa',      time],
-                ['Bilangan',  `${pax} biji`],
                 ['Cawangan',  branch],
                 ['Telefon',   phone],
-                ...(notes ? [['Catatan', notes]] : []),
+                ...(notes ? [['Pesanan', `<pre style="font-family:monospace;font-size:12px;white-space:pre-wrap;margin:0">${notes}</pre>`]] : []),
               ].map(([k, v], i) => `
                 <tr style="background:${i % 2 === 0 ? '#FEF9F0' : '#fff'}">
                   <td style="padding:12px 16px;color:#6B5744;font-size:14px;width:120px">${k}</td>
@@ -78,7 +77,7 @@ export async function POST(request) {
               <a href="https://wa.me/60143860742" style="color:#1B4332;font-weight:600">+60 14-386 0742</a>.
             </div>
             <p style="color:#6B5744;font-size:12px;margin-top:24px;text-align:center">
-              © 2025 DKAMPUNG · Said Hashim · Terima kasih kerana memilih kami!
+              © 2025 DKAMPUNG · Gion Master · Terima kasih kerana memilih kami!
             </p>
           </div>
         `,

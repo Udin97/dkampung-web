@@ -1,17 +1,39 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useEffect, useMemo } from 'react'
 
 const BRANCHES = [
-  'Dapur Kampung Putra Perdana',
-  'Dapur Kampung Cyberjaya',
-  'Nasi Lemak Che Dil Cyberjaya',
+  'Taman Putra Perdana',
+  'Cyberjaya',
+  'Kota Warisan',
 ]
 
 const TIME_SLOTS = [
-  '8:00 AM','9:00 AM','10:00 AM','11:00 AM',
+  '7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM',
   '12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM',
+  '6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM','11:00 PM',
+]
+
+const MENU_FALLBACK = [
+  { id: 'apam', category: 'Kuih Kukus', emoji: '🫓', items: [
+    { name: 'Apam Putih',  price: 1.50, min: 50 },
+    { name: 'Apam Pandan', price: 1.50, min: 50 },
+    { name: 'Apam Keladi', price: 1.60, min: 50 },
+  ]},
+  { id: 'kaswi', category: 'Kaswi', emoji: '🍮', items: [
+    { name: 'Kaswi Jagung', price: 1.80, min: 50 },
+    { name: 'Kaswi Pandan', price: 1.80, min: 50 },
+    { name: 'Kaswi Coklat', price: 1.80, min: 50 },
+    { name: 'Kaswi Ubi',    price: 1.80, min: 50 },
+  ]},
+  { id: 'santan', category: 'Kuih Santan', emoji: '🥥', items: [
+    { name: 'Tepung Pelita',  price: 2.00, min: 50 },
+    { name: 'Kuih Talam',     price: 2.00, min: 50 },
+    { name: 'Serimuka Pulut', price: 2.50, min: 50 },
+  ]},
+  { id: 'nasi', category: 'Nasi & Hidangan', emoji: '🍚', items: [
+    { name: 'Nasi Lemak Che Dil', price: 5.00, min: 1 },
+  ]},
 ]
 
 const inputCls = `w-full bg-stone border border-brown/15 rounded-xl px-4 py-3 text-sm text-ink
@@ -31,29 +53,117 @@ function Field({ label, required, children, hint }) {
 }
 
 export default function ReservationsPage() {
-  const [form, setForm]     = useState({ name:'', email:'', phone:'', date:'', time:'', pax:'', branch:'', notes:'' })
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error,   setError]   = useState('')
+  const [form, setForm]         = useState({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
+  const [orderItems, setOrderItems] = useState({})
+  const [specialNote, setSpecialNote] = useState('')
+  const [menu, setMenu]         = useState(MENU_FALLBACK)
+  const [loading, setLoading]   = useState(false)
+  const [success, setSuccess]   = useState(false)
+  const [error, setError]       = useState('')
 
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
   const minDateStr = minDate.toISOString().split('T')[0]
 
+  useEffect(() => {
+    fetch('/api/menu')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.items?.length) return
+        const map = {}
+        data.items.forEach(item => {
+          const catId = item.category_id || 'other'
+          if (!map[catId]) {
+            map[catId] = {
+              id: catId,
+              category: item.category_name,
+              emoji: item.category_emoji || '🍽',
+              items: [],
+            }
+          }
+          map[catId].items.push({
+            name:  item.name,
+            price: parseFloat(item.price),
+            min:   item.min_order || 50,
+          })
+        })
+        const groups = Object.values(map)
+        if (groups.length) setMenu(groups)
+      })
+      .catch(() => {})
+  }, [])
+
+  const itemMap = useMemo(() => {
+    const m = {}
+    menu.forEach(cat => cat.items.forEach(item => { m[item.name] = item }))
+    return m
+  }, [menu])
+
+  const totalQty   = Object.values(orderItems).reduce((s, q) => s + q, 0)
+  const totalPrice = Object.entries(orderItems).reduce((s, [name, q]) => s + q * (itemMap[name]?.price || 0), 0)
+
+  const increment = (name, min) => {
+    setOrderItems(p => {
+      const cur  = p[name] || 0
+      const step = min >= 50 ? 10 : 1
+      return { ...p, [name]: cur === 0 ? min : cur + step }
+    })
+  }
+
+  const decrement = (name, min) => {
+    setOrderItems(p => {
+      const cur = p[name] || 0
+      if (cur === 0) return p
+      const step = min >= 50 ? 10 : 1
+      const next = cur - step
+      if (next <= 0) {
+        const updated = { ...p }
+        delete updated[name]
+        return updated
+      }
+      return { ...p, [name]: next }
+    })
+  }
+
   const set = e => { setForm(p => ({ ...p, [e.target.name]: e.target.value })); setError('') }
 
   const handleSubmit = async e => {
     e.preventDefault()
-    setLoading(true); setError('')
+    setError('')
+
+    if (totalQty === 0) {
+      setError('Sila pilih sekurang-kurangnya satu item menu.')
+      return
+    }
+
+    const underMin = Object.entries(orderItems).find(([name, qty]) => qty < (itemMap[name]?.min || 50))
+    if (underMin) {
+      const [name] = underMin
+      const minVal = itemMap[name]?.min || 50
+      setError(`${name}: kuantiti minimum ialah ${minVal} biji.`)
+      return
+    }
+
+    const orderLines = Object.entries(orderItems)
+      .map(([name, qty]) => `• ${name} × ${qty} biji — RM ${(qty * (itemMap[name]?.price || 0)).toFixed(2)}`)
+      .join('\n')
+    const notes = `PESANAN:\n${orderLines}\nJumlah: ${totalQty} biji | Anggaran: RM ${totalPrice.toFixed(2)}${specialNote ? `\nNota: ${specialNote}` : ''}`
+
+    setLoading(true)
     try {
       const res  = await fetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, pax: totalQty, notes }),
       })
       const data = await res.json()
       if (!res.ok) setError(data.error || 'Ralat tidak dijangka.')
-      else { setSuccess(true); setForm({ name:'',email:'',phone:'',date:'',time:'',pax:'',branch:'',notes:'' }) }
+      else {
+        setSuccess(true)
+        setForm({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
+        setOrderItems({})
+        setSpecialNote('')
+      }
     } catch {
       setError('Tiada sambungan internet. Sila cuba lagi.')
     } finally {
@@ -99,15 +209,11 @@ export default function ReservationsPage() {
 
         {/* ── Left panel ── */}
         <div className="bg-charcoal relative overflow-hidden flex flex-col px-8 py-14 md:sticky md:top-[68px] md:h-[calc(100vh-68px)]">
-
-          {/* Dot pattern */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
             backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
             backgroundSize: '28px 28px',
           }} />
-
-          <div className="relative flex-1 flex flex-col">
-            {/* Brand */}
+          <div className="relative flex-1 flex flex-col overflow-y-auto">
             <div className="mb-10">
               <div className="text-[0.6rem] font-semibold tracking-[4px] uppercase text-gold/50 mb-4">
                 Tempahan Online
@@ -121,7 +227,6 @@ export default function ReservationsPage() {
               </p>
             </div>
 
-            {/* Info list */}
             <div className="space-y-5 mb-10">
               {[
                 { icon: '⏱', title: 'Tempah 3 Hari Awal', desc: 'Untuk pastikan kuih tersedia segar.' },
@@ -138,7 +243,15 @@ export default function ReservationsPage() {
               ))}
             </div>
 
-            {/* Contact shortcut */}
+            {/* Live order summary */}
+            {totalQty > 0 && (
+              <div className="bg-white/5 rounded-2xl px-5 py-4 mb-6 border border-white/8">
+                <div className="text-[0.6rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-2">Ringkasan</div>
+                <div className="text-cream font-semibold">{totalQty} biji</div>
+                <div className="text-gold font-bold text-2xl font-fraunces">RM {totalPrice.toFixed(2)}</div>
+              </div>
+            )}
+
             <div className="mt-auto pt-8 border-t border-white/8">
               <p className="text-cream/30 text-xs mb-3">Atau hubungi terus:</p>
               <a href="https://wa.me/60143860742" target="_blank" rel="noopener noreferrer"
@@ -160,7 +273,7 @@ export default function ReservationsPage() {
             </div>
           )}
 
-          {/* Section: Personal info */}
+          {/* Section 1: Personal info */}
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-6 h-6 rounded-full bg-charcoal text-cream text-xs flex items-center justify-center font-semibold shrink-0">1</span>
@@ -182,10 +295,9 @@ export default function ReservationsPage() {
             </Field>
           </div>
 
-          {/* Divider */}
           <div className="border-t border-brown/10 mb-10" />
 
-          {/* Section: Booking details */}
+          {/* Section 2: Booking details */}
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-6 h-6 rounded-full bg-charcoal text-cream text-xs flex items-center justify-center font-semibold shrink-0">2</span>
@@ -203,23 +315,101 @@ export default function ReservationsPage() {
                 </select>
               </Field>
             </div>
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <Field label="Bilangan (biji)" required hint="Minimum 50 biji per tempahan.">
-                <input name="pax" type="number" required min="50" step="10" value={form.pax} onChange={set}
-                  placeholder="Min. 50 biji" className={inputCls} />
-              </Field>
-              <Field label="Cawangan Ambil" required>
-                <select name="branch" required value={form.branch} onChange={set} className={inputCls}>
-                  <option value="">-- Pilih cawangan --</option>
-                  {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </Field>
+            <Field label="Cawangan Ambil" required>
+              <select name="branch" required value={form.branch} onChange={set} className={inputCls}>
+                <option value="">-- Pilih cawangan --</option>
+                {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <div className="border-t border-brown/10 mb-10" />
+
+          {/* Section 3: Menu selection */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-6 h-6 rounded-full bg-charcoal text-cream text-xs flex items-center justify-center font-semibold shrink-0">3</span>
+              <h2 className="font-fraunces font-semibold text-xl text-charcoal">Pilihan Menu</h2>
             </div>
-            <Field label="Catatan Tambahan">
-              <textarea name="notes" rows={3} value={form.notes} onChange={set}
+
+            <div className="space-y-5">
+              {menu.map(cat => (
+                <div key={cat.id} className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-brown/6 flex items-center gap-2 bg-stone/50">
+                    <span className="text-base">{cat.emoji}</span>
+                    <span className="font-fraunces font-semibold text-charcoal text-sm">{cat.category}</span>
+                  </div>
+                  <div className="divide-y divide-brown/5">
+                    {cat.items.map(item => {
+                      const qty = orderItems[item.name] || 0
+                      return (
+                        <div key={item.name}
+                          className="flex items-center gap-3 px-5 py-3.5">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-charcoal">{item.name}</div>
+                            <div className="text-xs text-muted mt-0.5">
+                              RM {parseFloat(item.price).toFixed(2)} / biji
+                              {item.min > 1 && (
+                                <span className="ml-2 text-terra">min {item.min} biji</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button type="button"
+                              onClick={() => decrement(item.name, item.min)}
+                              disabled={qty === 0}
+                              className="w-7 h-7 rounded-full border border-brown/20 flex items-center justify-center
+                                text-charcoal hover:bg-stone disabled:opacity-25 transition-colors font-bold text-sm">
+                              −
+                            </button>
+                            <span className="w-9 text-center text-sm font-semibold text-charcoal tabular-nums">
+                              {qty}
+                            </span>
+                            <button type="button"
+                              onClick={() => increment(item.name, item.min)}
+                              className="w-7 h-7 rounded-full bg-charcoal text-cream flex items-center justify-center
+                                hover:bg-forest transition-colors font-bold text-sm">
+                              +
+                            </button>
+                          </div>
+                          <div className="w-16 text-right shrink-0">
+                            {qty > 0 && (
+                              <span className="text-xs font-semibold text-forest">
+                                RM {(qty * item.price).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Total bar */}
+            {totalQty > 0 && (
+              <div className="mt-5 bg-charcoal rounded-2xl px-5 py-4 flex items-center justify-between">
+                <div>
+                  <div className="text-cream/50 text-xs">Jumlah Pesanan</div>
+                  <div className="text-cream font-semibold text-sm">{totalQty} biji</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-cream/50 text-xs">Anggaran Harga</div>
+                  <div className="text-gold font-bold text-xl font-fraunces">RM {totalPrice.toFixed(2)}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Special note */}
+            <div className="mt-5">
+              <label className="block text-[0.78rem] font-semibold text-charcoal/70 mb-2 tracking-wide">
+                Nota Khas <span className="text-muted font-normal text-xs">(pilihan)</span>
+              </label>
+              <textarea rows={2} value={specialNote} onChange={e => setSpecialNote(e.target.value)}
                 placeholder="Contoh: Campuran pandan dan coklat (25 biji setiap satu)..."
                 className={`${inputCls} resize-none`} />
-            </Field>
+            </div>
           </div>
 
           {/* Submit */}

@@ -4,25 +4,25 @@ import { useState } from 'react'
 
 const BRANCHES = [
   {
-    name:    'Dapur Kampung Putra Perdana',
+    name:    'Taman Putra Perdana',
     address: 'Taman Putra Perdana, Puchong, Selangor',
-    hours:   'Isnin – Ahad, 8:00 pagi – Petang',
+    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
     num:     '01',
     mapSrc:  'https://maps.google.com/maps?q=Taman+Putra+Perdana+Puchong&output=embed',
   },
   {
-    name:    'Dapur Kampung Cyberjaya',
+    name:    'Cyberjaya',
     address: 'Cyberjaya, Selangor',
-    hours:   'Isnin – Ahad, 8:00 pagi – Petang',
+    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
     num:     '02',
     mapSrc:  'https://maps.google.com/maps?q=Cyberjaya+Selangor&output=embed',
   },
   {
-    name:    'Nasi Lemak Che Dil Cyberjaya',
-    address: 'Cyberjaya, Selangor',
-    hours:   'Isnin – Ahad, 8:00 pagi – Petang',
+    name:    'Kota Warisan',
+    address: 'Kota Warisan, Selangor',
+    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
     num:     '03',
-    mapSrc:  'https://maps.google.com/maps?q=Cyberjaya+Selangor&output=embed',
+    mapSrc:  'https://maps.google.com/maps?q=Kota+Warisan+Selangor&output=embed',
   },
 ]
 
@@ -83,7 +83,7 @@ export default function ContactPage() {
             },
             {
               label: 'WhatsApp',
-              value: 'Said Hashim',
+              value: 'Gion Master',
               sub:   'Balas segera',
               href:  'https://wa.me/60143860742',
               icon: (
@@ -94,7 +94,7 @@ export default function ContactPage() {
             },
             {
               label: 'Waktu Operasi',
-              value: '8:00 pagi – Petang',
+              value: '7:00 pagi – 11:00 malam',
               sub:   'Isnin – Ahad',
               href:  null,
               icon: (

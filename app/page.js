@@ -40,7 +40,7 @@ export default function HomePage() {
           {/* ─ Left copy ─ */}
           <div>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 border border-gold/20 text-gold/65
+            <div className="inline-flex items-center gap-2.5 border border-gold/20 text-gold
               text-[0.63rem] tracking-[3px] uppercase px-4 py-1.5 rounded-full mb-10">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
               Kuih Tradisional · Segar Setiap Hari
@@ -52,13 +52,13 @@ export default function HomePage() {
               <span className="block text-cream font-black tracking-[-2px]">Kuih</span>
               <span className="block text-gold font-normal italic tracking-[-1px]">Tradisional</span>
               <span className="block font-black tracking-[-2px]"
-                style={{ WebkitTextStroke: '1.5px rgba(245,230,200,0.18)', color: 'transparent' }}>
+                style={{ WebkitTextStroke: '1.5px rgba(245,230,200,0.40)', color: 'transparent' }}>
                 Terbaik
               </span>
             </h1>
 
             {/* Subtext */}
-            <p className="text-cream/40 text-[0.93rem] leading-[1.9] max-w-[390px] mb-12">
+            <p className="text-cream/70 text-[0.93rem] leading-[1.9] max-w-[390px] mb-12">
               Dibuat dengan penuh kasih sayang menggunakan resipi turun-temurun.
               Segar setiap pagi — siap untuk majlis anda.
             </p>
@@ -68,7 +68,7 @@ export default function HomePage() {
               {[{ num: '3', label: 'Cawangan' }, { num: '10+', label: 'Jenis Kuih' }, { num: '500+', label: 'Pelanggan/Bln' }].map((s, i) => (
                 <div key={s.label} className={`pr-10 ${i > 0 ? 'pl-10 border-l border-white/10' : ''}`}>
                   <div className="font-fraunces font-black text-4xl text-gold leading-none">{s.num}</div>
-                  <div className="text-[0.6rem] tracking-[2.5px] text-cream/28 uppercase mt-2">{s.label}</div>
+                  <div className="text-[0.6rem] tracking-[2.5px] text-cream/55 uppercase mt-2">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -95,7 +95,7 @@ export default function HomePage() {
             <div className="bg-white/[0.045] backdrop-blur-sm border border-white/7 rounded-3xl overflow-hidden">
               <div className="px-5 py-4 border-b border-white/7 flex items-center justify-between">
                 <span className="text-gold/55 text-[0.62rem] tracking-[2.5px] uppercase font-semibold">Menu Hari Ini</span>
-                <Link href="/menu" className="text-cream/28 text-[0.72rem] hover:text-cream/60 transition-colors">
+                <Link href="/menu" className="text-cream/55 text-[0.72rem] hover:text-cream/80 transition-colors">
                   Lihat semua →
                 </Link>
               </div>
@@ -106,7 +106,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-3.5">
                       <span className="text-lg opacity-75">{item.emoji}</span>
                       <div>
-                        <span className="text-cream/80 text-sm font-medium group-hover:text-cream transition-colors">
+                        <span className="text-cream text-sm font-medium group-hover:text-cream transition-colors">
                           {item.name}
                         </span>
                         {item.tag && (
@@ -117,14 +117,14 @@ export default function HomePage() {
                         )}
                       </div>
                     </div>
-                    <span className="text-gold/65 font-semibold text-sm group-hover:text-gold transition-colors">
+                    <span className="text-gold/90 font-semibold text-sm group-hover:text-gold transition-colors">
                       {item.price}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="px-5 py-3 bg-white/[0.02] border-t border-white/5">
-                <p className="text-cream/22 text-[0.67rem]">Min. 50 biji · Segar setiap hari</p>
+                <p className="text-cream/45 text-[0.67rem]">Min. 50 biji · Segar setiap hari</p>
               </div>
             </div>
           </div>

@@ -68,14 +68,11 @@ function MenuCard({ item }) {
       hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)]
       transition-all duration-200 border border-transparent hover:border-brown/8">
       {/* Thumbnail */}
-      <div className="w-full h-28 rounded-xl bg-cream2/70 flex items-center justify-center
-        relative overflow-hidden">
-        {item.image ? (
+      {item.image && (
+        <div className="w-full h-28 rounded-xl overflow-hidden relative">
           <Image src={item.image} alt={item.name} fill className="object-cover" />
-        ) : (
-          <span className="text-3xl opacity-20 select-none">📷</span>
-        )}
-      </div>
+        </div>
+      )}
       {/* Info */}
       <div className="flex-1">
         <h3 className="font-fraunces font-semibold text-charcoal text-[0.95rem] leading-tight">
