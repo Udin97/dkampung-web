@@ -7,6 +7,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        charcoal:  "#0C1710",
         forest:    "#1B4332",
         forest2:   "#2D6A4F",
         sage:      "#52796F",
@@ -18,6 +19,7 @@ module.exports = {
         terra:     "#B5541C",
         cream:     "#FEF9F0",
         cream2:    "#F5E6C8",
+        stone:     "#FDFAF5",
         parchment: "#EDD9A3",
         ink:       "#1A1008",
         muted:     "#6B5744",
