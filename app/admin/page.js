@@ -240,10 +240,10 @@ function OverviewTab({ pw }) {
   })
 
   const cards = [
-    { label: 'Pelawat Hari Ini', val: todayV,               bg: 'bg-blue-50',    num: 'text-blue-600',   icon: '👤' },
-    { label: 'Jumlah Pelawat',   val: d.visits.length,       bg: 'bg-forest/8',   num: 'text-forest',     icon: '📈' },
-    { label: 'Tempahan Pending', val: pending,               bg: 'bg-amber-50',   num: 'text-amber-600',  icon: '⏳' },
-    { label: 'Jumlah Tempahan',  val: d.reservations.length, bg: 'bg-purple-50',  num: 'text-purple-600', icon: '📋' },
+    { label: 'Pelawat Hari Ini', val: todayV,               bg: 'bg-blue-50',    num: 'text-blue-600',   icon: <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> },
+    { label: 'Jumlah Pelawat',   val: d.visits.length,       bg: 'bg-forest/8',   num: 'text-forest',     icon: <svg className="w-5 h-5 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> },
+    { label: 'Tempahan Pending', val: pending,               bg: 'bg-amber-50',   num: 'text-amber-600',  icon: <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> },
+    { label: 'Jumlah Tempahan',  val: d.reservations.length, bg: 'bg-purple-50',  num: 'text-purple-600', icon: <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg> },
   ]
 
   return (
@@ -252,7 +252,7 @@ function OverviewTab({ pw }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(c => (
           <div key={c.label} className="bg-white rounded-2xl border border-brown/8 p-5 hover:shadow-md transition-shadow">
-            <div className={`w-10 h-10 ${c.bg} rounded-xl flex items-center justify-center text-xl mb-4`}>{c.icon}</div>
+            <div className={`w-10 h-10 ${c.bg} rounded-xl flex items-center justify-center mb-4`}>{c.icon}</div>
             <div className={`font-fraunces font-black text-4xl leading-none ${c.num}`}>{c.val}</div>
             <div className="text-muted text-xs mt-2 font-medium">{c.label}</div>
           </div>
@@ -796,12 +796,12 @@ function AnalyticsTab({ pw }) {
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Jumlah Lawatan', val: visits.length, icon: '🌐' },
-          { label: 'Halaman Unik',   val: pageList.length, icon: '📄' },
-          { label: 'Hari Ini',       val: visits.filter(v => v.visited_at?.startsWith(today)).length, icon: '📅' },
+          { label: 'Jumlah Lawatan', val: visits.length, icon: <svg className="w-6 h-6 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg> },
+          { label: 'Halaman Unik',   val: pageList.length, icon: <svg className="w-6 h-6 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> },
+          { label: 'Hari Ini',       val: visits.filter(v => v.visited_at?.startsWith(today)).length, icon: <svg className="w-6 h-6 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-2xl border border-brown/8 p-5">
-            <div className="text-2xl mb-3">{s.icon}</div>
+            <div className="mb-3">{s.icon}</div>
             <div className="font-fraunces font-black text-4xl text-charcoal leading-none">{s.val}</div>
             <div className="text-muted text-xs mt-2">{s.label}</div>
           </div>

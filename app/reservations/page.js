@@ -106,7 +106,7 @@ export default function ReservationsPage() {
     setOrderItems(p => {
       const cur  = p[name] || 0
       const step = min >= 50 ? 10 : 1
-      return { ...p, [name]: cur === 0 ? min : cur + step }
+      return { ...p, [name]: cur === 0 ? step : cur + step }
     })
   }
 
@@ -136,11 +136,8 @@ export default function ReservationsPage() {
       return
     }
 
-    const underMin = Object.entries(orderItems).find(([name, qty]) => qty < (itemMap[name]?.min || 50))
-    if (underMin) {
-      const [name] = underMin
-      const minVal = itemMap[name]?.min || 50
-      setError(`${name}: kuantiti minimum ialah ${minVal} biji.`)
+    if (totalQty < 50) {
+      setError('Jumlah minimum tempahan ialah 50 biji.')
       return
     }
 
@@ -229,12 +226,24 @@ export default function ReservationsPage() {
 
             <div className="space-y-5 mb-10">
               {[
-                { icon: '⏱', title: 'Tempah 3 Hari Awal', desc: 'Untuk pastikan kuih tersedia segar.' },
-                { icon: '🫓', title: 'Minimum 50 Biji',    desc: 'Setiap jenis kuih minimum 50 biji.' },
-                { icon: '✉️', title: 'Pengesahan Email',   desc: 'Resit tempahan dihantar ke emel anda.' },
+                {
+                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+                  title: 'Tempah 3 Hari Awal',
+                  desc: 'Untuk pastikan kuih tersedia segar.',
+                },
+                {
+                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
+                  title: 'Minimum 50 Biji',
+                  desc: 'Jumlah keseluruhan minimum 50 biji.',
+                },
+                {
+                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
+                  title: 'Pengesahan Email',
+                  desc: 'Resit tempahan dihantar ke emel anda.',
+                },
               ].map(i => (
                 <div key={i.title} className="flex items-start gap-3.5">
-                  <span className="text-xl opacity-60 mt-0.5">{i.icon}</span>
+                  {i.icon}
                   <div>
                     <div className="text-cream/70 text-sm font-semibold">{i.title}</div>
                     <div className="text-cream/35 text-xs leading-relaxed">{i.desc}</div>
@@ -349,9 +358,6 @@ export default function ReservationsPage() {
                             <div className="text-sm font-medium text-charcoal">{item.name}</div>
                             <div className="text-xs text-muted mt-0.5">
                               RM {parseFloat(item.price).toFixed(2)} / biji
-                              {item.min > 1 && (
-                                <span className="ml-2 text-terra">min {item.min} biji</span>
-                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">

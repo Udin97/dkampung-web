@@ -40,6 +40,7 @@ async function getMenu() {
 
     const map = {}
     data.forEach(item => {
+      if (!item.name) return // skip items with no name
       if (!map[item.category_id]) {
         map[item.category_id] = { id: item.category_id, category: item.category_name, emoji: item.category_emoji, items: [] }
       }
@@ -48,39 +49,35 @@ async function getMenu() {
 
     const sorted = CAT_ORDER.map(id => map[id]).filter(Boolean)
     const extra  = Object.values(map).filter(c => !CAT_ORDER.includes(c.id))
-    return [...sorted, ...extra]
+    return [...sorted, ...extra].filter(cat => cat.items.length > 0)
   } catch {
     return FALLBACK
   }
 }
 
-// Category accent colours (index-based)
 const CAT_ACCENTS = [
-  { dot: 'bg-forest',  ring: 'ring-forest/20',  label: 'text-forest' },
-  { dot: 'bg-terra',   ring: 'ring-terra/20',   label: 'text-terra'  },
-  { dot: 'bg-sage',    ring: 'ring-sage/20',    label: 'text-sage'   },
-  { dot: 'bg-brown2',  ring: 'ring-brown2/20',  label: 'text-brown2' },
+  { dot: 'bg-forest',  label: 'text-forest' },
+  { dot: 'bg-terra',   label: 'text-terra'  },
+  { dot: 'bg-sage',    label: 'text-sage'   },
+  { dot: 'bg-brown2',  label: 'text-brown2' },
 ]
 
 function MenuCard({ item }) {
   return (
-    <div className="bg-stone rounded-2xl p-4 flex flex-col gap-3
+    <div className="bg-stone rounded-2xl p-4 flex flex-col gap-2.5
       hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)]
       transition-all duration-200 border border-transparent hover:border-brown/8">
-      {/* Thumbnail */}
       {item.image && (
         <div className="w-full h-28 rounded-xl overflow-hidden relative">
           <Image src={item.image} alt={item.name} fill className="object-cover" />
         </div>
       )}
-      {/* Info */}
-      <div className="flex-1">
+      <div>
         <h3 className="font-fraunces font-semibold text-charcoal text-[0.95rem] leading-tight">
           {item.name}
         </h3>
         <p className="text-muted text-xs leading-relaxed mt-1 line-clamp-2">{item.desc}</p>
       </div>
-      {/* Price row */}
       <div className="flex items-center justify-between pt-2.5 border-t border-brown/8">
         <span className="text-terra font-bold text-sm">
           RM {parseFloat(item.price).toFixed(2)}
@@ -97,20 +94,41 @@ function MenuCard({ item }) {
   )
 }
 
+function CategoryCard({ cat, idx }) {
+  const accent = CAT_ACCENTS[idx % CAT_ACCENTS.length]
+  return (
+    <div className="bg-white rounded-3xl border border-brown/8 overflow-hidden
+      hover:shadow-[0_8px_40px_rgba(0,0,0,0.06)] transition-shadow duration-300">
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-brown/6">
+        <span className={`w-2 h-2 rounded-full ${accent.dot} shrink-0`} />
+        <h2 className={`font-fraunces font-bold text-xl ${accent.label}`}>{cat.category}</h2>
+        <span className="text-2xl ml-1">{cat.emoji}</span>
+        <span className="ml-auto text-muted text-xs">{cat.items.length} item</span>
+      </div>
+      <div className="p-4 flex flex-col gap-3">
+        {cat.items.map(item => (
+          <MenuCard key={item.name} item={item} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export const metadata = {
   title: 'Menu Kuih – DKAMPUNG',
   description: 'Senarai lengkap kuih tradisional DKAMPUNG: Apam, Kaswi, Tepung Pelita, Nasi Lemak dan lebih.',
 }
 
 export default async function MenuPage() {
-  const MENU = await getMenu()
+  const MENU  = await getMenu()
+  const left  = MENU.filter((_, i) => i % 2 === 0)
+  const right = MENU.filter((_, i) => i % 2 === 1)
 
   return (
     <div className="min-h-screen bg-stone pt-[68px]">
 
       {/* ── Header ── */}
       <div className="bg-charcoal relative overflow-hidden py-20 text-center px-6">
-        {/* dot pattern */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
           backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
           backgroundSize: '32px 32px',
@@ -123,39 +141,33 @@ export default async function MenuPage() {
           </h1>
           <p className="text-cream/40 max-w-sm mx-auto text-[0.9rem] leading-relaxed">
             Semua kuih dibuat segar setiap hari menggunakan bahan-bahan semula jadi pilihan.
-            Tempahan minimum 50 biji per jenis.
+            Tempahan minimum 50 biji jumlah.
           </p>
         </div>
       </div>
 
-      {/* ── Categories grid ── */}
+      {/* ── Categories — two independent columns (no height matching) ── */}
       <div className="max-w-6xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          {MENU.map((cat, idx) => {
-            const accent = CAT_ACCENTS[idx % CAT_ACCENTS.length]
-            return (
-              <div key={cat.id} className="bg-white rounded-3xl border border-brown/8 overflow-hidden
-                hover:shadow-[0_8px_40px_rgba(0,0,0,0.06)] transition-shadow duration-300">
 
-                {/* Category header */}
-                <div className="flex items-center gap-3 px-6 py-5 border-b border-brown/6">
-                  <span className={`w-2 h-2 rounded-full ${accent.dot} shrink-0`} />
-                  <h2 className={`font-fraunces font-bold text-xl ${accent.label}`}>
-                    {cat.category}
-                  </h2>
-                  <span className="text-2xl ml-1">{cat.emoji}</span>
-                  <span className="ml-auto text-muted text-xs">{cat.items.length} item</span>
-                </div>
+        {/* Mobile: single column */}
+        <div className="flex flex-col gap-6 md:hidden">
+          {MENU.map((cat, idx) => (
+            <CategoryCard key={cat.id} cat={cat} idx={idx} />
+          ))}
+        </div>
 
-                {/* Items */}
-                <div className="p-4 grid grid-cols-1 gap-3">
-                  {cat.items.map(item => (
-                    <MenuCard key={item.name} item={item} />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+        {/* Desktop: two independent flex columns so each column flows on its own */}
+        <div className="hidden md:flex gap-6 items-start">
+          <div className="flex-1 flex flex-col gap-6">
+            {left.map(cat => (
+              <CategoryCard key={cat.id} cat={cat} idx={MENU.indexOf(cat)} />
+            ))}
+          </div>
+          <div className="flex-1 flex flex-col gap-6">
+            {right.map(cat => (
+              <CategoryCard key={cat.id} cat={cat} idx={MENU.indexOf(cat)} />
+            ))}
+          </div>
         </div>
       </div>
 

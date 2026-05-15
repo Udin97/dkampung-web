@@ -10,10 +10,42 @@ const FEATURED = [
 ]
 
 const FEATURES = [
-  { icon: '🌿', title: 'Bahan Semula Jadi',  desc: 'Tiada pewarna atau perisa tiruan. Semua dari alam.' },
-  { icon: '☀️', title: 'Segar Setiap Pagi',  desc: 'Dibuat pada hari yang sama, dinikmati hari yang sama.' },
-  { icon: '🎉', title: 'Untuk Majlis',        desc: 'Minimum 50 biji, sempurna untuk kenduri dan majlis.' },
-  { icon: '✅', title: 'Halal & Bersih',      desc: 'Dapur bertauliah, proses higienik sepenuhnya.' },
+  {
+    icon: (
+      <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    ),
+    title: 'Bahan Semula Jadi',
+    desc: 'Tiada pewarna atau perisa tiruan. Semua dari alam.',
+  },
+  {
+    icon: (
+      <svg className="w-7 h-7 text-gold" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+    title: 'Segar Setiap Pagi',
+    desc: 'Dibuat pada hari yang sama, dinikmati hari yang sama.',
+  },
+  {
+    icon: (
+      <svg className="w-7 h-7 text-terra" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    title: 'Untuk Majlis',
+    desc: 'Minimum 50 biji, sempurna untuk kenduri dan majlis.',
+  },
+  {
+    icon: (
+      <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    title: 'Halal & Bersih',
+    desc: 'Dapur bertauliah, proses higienik sepenuhnya.',
+  },
 ]
 
 const TICKER = ['Segar Setiap Pagi', 'Halal & Bersih', 'Min. 50 Biji', 'Tempahan Kenduri', 'Resipi Turun-Temurun', 'Tiga Cawangan']
@@ -161,7 +193,7 @@ export default function HomePage() {
                 className="group bg-white rounded-2xl p-6 border border-brown/6
                   hover:border-forest/18 hover:shadow-[0_8px_32px_rgba(27,67,50,0.07)]
                   transition-all duration-300 cursor-default">
-                <div className="text-3xl mb-4">{f.icon}</div>
+                <div className="mb-4">{f.icon}</div>
                 <div className="font-semibold text-charcoal text-[0.88rem] mb-1.5 group-hover:text-forest transition-colors">
                   {f.title}
                 </div>
@@ -204,7 +236,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-3">
             {FEATURES.map(f => (
               <div key={f.title} className="flex items-start gap-3 bg-white rounded-2xl p-4 border border-brown/6">
-                <span className="text-2xl mt-0.5 shrink-0">{f.icon}</span>
+                <span className="shrink-0">{f.icon}</span>
                 <div>
                   <div className="font-semibold text-charcoal text-sm mb-0.5">{f.title}</div>
                   <div className="text-muted text-xs leading-relaxed">{f.desc}</div>
