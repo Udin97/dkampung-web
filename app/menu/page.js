@@ -45,25 +45,25 @@ const MENU = [
 
 function MenuCard({ item }) {
   return (
-    <div className="flex items-center justify-between px-5 py-4 bg-white hover:bg-cream/60 transition-colors border-b border-brown/6 last:border-0">
-      <div className="flex items-start gap-4 flex-1 min-w-0">
-        {/* Image or placeholder */}
-        <div className="w-14 h-14 rounded-xl bg-cream2 flex items-center justify-center shrink-0 relative overflow-hidden">
-          {item.image ? (
-            <Image src={item.image} alt={item.name} fill className="object-cover rounded-xl" />
-          ) : (
-            <span className="text-2xl opacity-50">📷</span>
-          )}
-        </div>
-        <div className="min-w-0">
-          <h3 className="font-semibold text-brown text-sm leading-tight">{item.name}</h3>
-          <p className="text-muted text-xs leading-relaxed mt-0.5 line-clamp-2">{item.desc}</p>
-        </div>
+    <div className="bg-white rounded-xl border border-brown/8 p-4 flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+      {/* Thumbnail */}
+      <div className="w-full h-28 rounded-lg bg-cream2 flex items-center justify-center relative overflow-hidden">
+        {item.image ? (
+          <Image src={item.image} alt={item.name} fill className="object-cover" />
+        ) : (
+          <span className="text-3xl opacity-30">📷</span>
+        )}
       </div>
-      <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
-        <span className="text-terra font-bold text-sm">RM {item.price.toFixed(2)}</span>
+      {/* Info */}
+      <div className="flex-1">
+        <h3 className="font-fraunces font-semibold text-brown text-base leading-tight">{item.name}</h3>
+        <p className="text-muted text-xs leading-relaxed mt-1 line-clamp-2">{item.desc}</p>
+      </div>
+      {/* Price row */}
+      <div className="flex items-center justify-between pt-2 border-t border-brown/6">
+        <span className="text-terra font-bold text-sm">RM {item.price.toFixed(2)} <span className="text-muted font-normal text-xs">/ biji</span></span>
         {item.min > 1 && (
-          <span className="text-[0.6rem] font-semibold uppercase tracking-wide text-muted">
+          <span className="text-[0.6rem] font-semibold uppercase tracking-wide bg-forest/8 text-forest px-2 py-0.5 rounded-full">
             Min. {item.min}
           </span>
         )}
@@ -90,22 +90,25 @@ export default function MenuPage() {
         </p>
       </div>
 
-      {/* Categories */}
+      {/* Categories — 2-column parallel grid */}
       <div className="max-w-6xl mx-auto px-6 py-16">
-        {MENU.map(cat => (
-          <div key={cat.id} className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <span className="text-3xl">{cat.emoji}</span>
-              <h2 className="font-fraunces font-bold text-3xl text-forest">{cat.category}</h2>
-              <div className="flex-1 h-px bg-brown/10 ml-4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          {MENU.map(cat => (
+            <div key={cat.id} className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
+              {/* Category header */}
+              <div className="flex items-center gap-3 px-5 py-4 bg-cream2/50 border-b border-brown/8">
+                <span className="text-2xl">{cat.emoji}</span>
+                <h2 className="font-fraunces font-bold text-xl text-forest">{cat.category}</h2>
+              </div>
+              {/* Items grid */}
+              <div className="p-4 grid grid-cols-1 gap-3">
+                {cat.items.map(item => (
+                  <MenuCard key={item.name} item={item} />
+                ))}
+              </div>
             </div>
-            <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
-              {cat.items.map(item => (
-                <MenuCard key={item.name} item={item} />
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Bottom CTA */}
