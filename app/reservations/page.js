@@ -60,6 +60,14 @@ export default function ReservationsPage() {
   const [loading, setLoading]   = useState(false)
   const [success, setSuccess]   = useState(false)
   const [error, setError]       = useState('')
+  const [confirming, setConfirming] = useState(false)
+  const [sent, setSent]         = useState(false)
+
+  useEffect(() => {
+    if (!confirming) return
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [confirming])
 
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
@@ -127,9 +135,14 @@ export default function ReservationsPage() {
 
   const set = e => { setForm(p => ({ ...p, [e.target.name]: e.target.value })); setError('') }
 
-  const handleSubmit = async e => {
-    e.preventDefault()
+  const handleReview = e => {
+    e?.preventDefault?.()
     setError('')
+
+    if (!form.name || !form.phone || !form.email || !form.date || !form.time || !form.branch) {
+      setError('Sila lengkapkan semua maklumat yang diperlukan.')
+      return
+    }
 
     if (totalQty === 0) {
       setError('Sila pilih sekurang-kurangnya satu item menu.')
@@ -141,6 +154,11 @@ export default function ReservationsPage() {
       return
     }
 
+    setConfirming(true)
+  }
+
+  const handleConfirm = async () => {
+    setError('')
     const orderLines = Object.entries(orderItems)
       .map(([name, qty]) => `• ${name} × ${qty} biji — RM ${(qty * (itemMap[name]?.price || 0)).toFixed(2)}`)
       .join('\n')
@@ -154,18 +172,32 @@ export default function ReservationsPage() {
         body: JSON.stringify({ ...form, pax: totalQty, notes }),
       })
       const data = await res.json()
-      if (!res.ok) setError(data.error || 'Ralat tidak dijangka.')
-      else {
+      if (!res.ok) {
+        setError(data.error || 'Ralat tidak dijangka.')
+        setLoading(false)
+        return
+      }
+      setSent(true)
+      setLoading(false)
+      setTimeout(() => {
         setSuccess(true)
+        setConfirming(false)
+        setSent(false)
         setForm({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
         setOrderItems({})
         setSpecialNote('')
-      }
+      }, 1600)
     } catch {
       setError('Tiada sambungan internet. Sila cuba lagi.')
-    } finally {
       setLoading(false)
     }
+  }
+
+  const fmtDate = d => {
+    if (!d) return ''
+    try {
+      return new Date(d).toLocaleDateString('ms-MY', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+    } catch { return d }
   }
 
   if (success) {
@@ -202,6 +234,148 @@ export default function ReservationsPage() {
 
   return (
     <div className="min-h-screen bg-stone pt-[68px]">
+
+      {/* ── Confirmation modal ── */}
+      {confirming && (
+        <div className="fixed inset-0 z-[60] bg-charcoal/55 backdrop-blur-sm flex items-center justify-center p-4
+          animate-fadeIn"
+          onClick={loading || sent ? undefined : () => setConfirming(false)}>
+          <div onClick={e => e.stopPropagation()}
+            className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto
+              shadow-[0_24px_80px_rgba(0,0,0,0.25)] animate-popIn">
+
+            {sent ? (
+              /* Success animation view */
+              <div className="px-8 py-14 text-center">
+                <div className="relative w-24 h-24 mx-auto mb-7">
+                  <span className="absolute inset-0 rounded-full bg-forest/25 animate-ping" />
+                  <span className="absolute inset-0 rounded-full bg-forest flex items-center justify-center animate-scaleIn">
+                    <svg className="w-12 h-12" viewBox="0 0 52 52" fill="none">
+                      <path d="M14 27 L23 36 L40 18" stroke="white" strokeWidth="4"
+                        strokeLinecap="round" strokeLinejoin="round" className="animate-drawCheck" />
+                    </svg>
+                  </span>
+                </div>
+                <h2 className="font-fraunces font-black text-2xl text-charcoal mb-2 animate-fadeUpDelay">
+                  Tempahan Dihantar!
+                </h2>
+                <p className="text-muted text-sm leading-relaxed animate-fadeUpDelay">
+                  Kami akan hubungi anda tidak lama lagi.
+                </p>
+              </div>
+            ) : (
+              /* Details review view */
+              <>
+                <div className="px-6 py-5 border-b border-brown/8 flex items-center justify-between">
+                  <div>
+                    <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold mb-1">Semakan</div>
+                    <h2 className="font-fraunces font-black text-xl text-charcoal">Sahkan Tempahan Anda</h2>
+                  </div>
+                  <button type="button" onClick={() => setConfirming(false)} disabled={loading}
+                    className="w-9 h-9 rounded-full hover:bg-stone flex items-center justify-center text-muted
+                      disabled:opacity-30 transition-colors" aria-label="Tutup">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="px-6 py-5 space-y-5">
+                  {/* Customer */}
+                  <section>
+                    <div className="text-[0.6rem] font-semibold tracking-[2.5px] uppercase text-muted mb-2.5">Maklumat Pelanggan</div>
+                    <div className="bg-stone/60 rounded-xl px-4 py-3 space-y-1.5 text-sm">
+                      <div className="flex justify-between gap-3"><span className="text-muted">Nama</span><span className="text-charcoal font-medium text-right">{form.name}</span></div>
+                      <div className="flex justify-between gap-3"><span className="text-muted">WhatsApp</span><span className="text-charcoal font-medium text-right">{form.phone}</span></div>
+                      <div className="flex justify-between gap-3"><span className="text-muted">Emel</span><span className="text-charcoal font-medium text-right break-all">{form.email}</span></div>
+                    </div>
+                  </section>
+
+                  {/* Booking */}
+                  <section>
+                    <div className="text-[0.6rem] font-semibold tracking-[2.5px] uppercase text-muted mb-2.5">Butiran Tempahan</div>
+                    <div className="bg-stone/60 rounded-xl px-4 py-3 space-y-1.5 text-sm">
+                      <div className="flex justify-between gap-3"><span className="text-muted">Cawangan</span><span className="text-charcoal font-medium text-right">{form.branch}</span></div>
+                      <div className="flex justify-between gap-3"><span className="text-muted">Tarikh</span><span className="text-charcoal font-medium text-right">{fmtDate(form.date)}</span></div>
+                      <div className="flex justify-between gap-3"><span className="text-muted">Masa</span><span className="text-charcoal font-medium text-right">{form.time}</span></div>
+                    </div>
+                  </section>
+
+                  {/* Items */}
+                  <section>
+                    <div className="text-[0.6rem] font-semibold tracking-[2.5px] uppercase text-muted mb-2.5 flex items-center justify-between">
+                      <span>Senarai Kuih</span>
+                      <span className="text-charcoal/60">{totalQty} biji</span>
+                    </div>
+                    <div className="bg-stone/60 rounded-xl divide-y divide-brown/8">
+                      {Object.entries(orderItems).map(([name, qty]) => {
+                        const price    = itemMap[name]?.price || 0
+                        const subtotal = qty * price
+                        return (
+                          <div key={name} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-charcoal font-medium truncate">{name}</div>
+                              <div className="text-muted text-xs">{qty} × RM {price.toFixed(2)}</div>
+                            </div>
+                            <div className="text-forest font-semibold text-sm shrink-0">RM {subtotal.toFixed(2)}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </section>
+
+                  {/* Total */}
+                  <section className="bg-charcoal rounded-2xl px-5 py-4 flex items-center justify-between">
+                    <span className="text-cream/60 text-xs uppercase tracking-wider font-semibold">Jumlah Keseluruhan</span>
+                    <span className="text-gold font-fraunces font-black text-2xl">RM {totalPrice.toFixed(2)}</span>
+                  </section>
+
+                  {/* Notes */}
+                  {specialNote && (
+                    <section>
+                      <div className="text-[0.6rem] font-semibold tracking-[2.5px] uppercase text-muted mb-2.5">Nota Khas</div>
+                      <div className="bg-stone/60 rounded-xl px-4 py-3 text-sm text-charcoal leading-relaxed whitespace-pre-wrap">
+                        {specialNote}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Inline error */}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200/60 text-red-700 rounded-xl p-3 text-xs flex items-start gap-2">
+                      <span className="text-red-500 mt-0.5">!</span>
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 border-t border-brown/8 flex gap-2.5 sticky bottom-0 bg-white">
+                  <button type="button" onClick={() => setConfirming(false)} disabled={loading}
+                    className="flex-1 border border-brown/20 text-charcoal px-4 py-3 rounded-full font-semibold text-sm
+                      hover:bg-stone transition-colors disabled:opacity-40">
+                    Edit Semula
+                  </button>
+                  <button type="button" onClick={handleConfirm} disabled={loading}
+                    className="flex-[1.4] bg-charcoal text-cream px-4 py-3 rounded-full font-semibold text-sm
+                      hover:bg-forest transition-colors disabled:opacity-50
+                      flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.15)]">
+                    {loading ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin" />
+                        Menghantar...
+                      </>
+                    ) : (
+                      <>Sahkan & Hantar →</>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-[360px_1fr] min-h-[calc(100vh-68px)]">
 
         {/* ── Left panel ── */}
@@ -419,11 +593,11 @@ export default function ReservationsPage() {
           </div>
 
           {/* Submit */}
-          <button type="button" onClick={handleSubmit} disabled={loading}
+          <button type="button" onClick={handleReview} disabled={loading}
             className="w-full bg-charcoal text-cream py-4 rounded-full font-semibold text-[0.9rem]
               hover:bg-forest transition-colors disabled:opacity-50 disabled:cursor-not-allowed
               shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
-            {loading ? 'Menghantar...' : 'Hantar Tempahan →'}
+            Semak & Hantar Tempahan →
           </button>
 
           <p className="text-center text-muted/60 text-xs mt-5 leading-relaxed">
