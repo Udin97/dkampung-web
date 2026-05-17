@@ -11,6 +11,8 @@ function auth(request) {
   return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const { data, error } = await supabase
     .from('menu_items')
@@ -26,10 +28,18 @@ export async function GET() {
 export async function POST(request) {
   if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
+  }
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
   const body = await request.json()
   const { category_id, category_name, category_emoji, name, description, price, min_order, image_url } = body
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('menu_items')
     .insert([{ category_id, category_name, category_emoji, name, description, price: parseFloat(price), min_order: min_order || 50, image_url: image_url || null }])
     .select()

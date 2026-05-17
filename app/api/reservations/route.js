@@ -10,6 +10,8 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+export const dynamic = 'force-dynamic'
+
 // POST /api/reservations — called when the booking form is submitted
 export async function POST(request) {
   try {

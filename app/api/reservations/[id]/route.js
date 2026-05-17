@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+function admin() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 function auth(request) {
   const h = request.headers.get('Authorization') || ''
@@ -13,6 +16,9 @@ function auth(request) {
 
 export async function PATCH(request, { params }) {
   if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const supabase = admin()
+  if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
 
   const body = await request.json()
   const { data, error } = await supabase
@@ -28,6 +34,9 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const supabase = admin()
+  if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
 
   const { error } = await supabase.from('reservations').delete().eq('id', params.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -21,7 +21,16 @@ const STATUS_CLS = {
   pending:          'bg-amber-50  text-amber-700  border-amber-200',
   confirmed:        'bg-emerald-50 text-emerald-700 border-emerald-200',
   ready_for_pickup: 'bg-teal-50   text-teal-700   border-teal-200',
+  completed:        'bg-blue-50   text-blue-700   border-blue-200',
   cancelled:        'bg-red-50    text-red-600    border-red-200',
+}
+
+const STATUS_LABEL = {
+  pending:          'Pending',
+  confirmed:        'Confirmed',
+  ready_for_pickup: 'Siap Ambil',
+  completed:        'Selesai',
+  cancelled:        'Cancelled',
 }
 
 // ── SVG Charts ────────────────────────────────────────────────────────────────
@@ -58,13 +67,14 @@ function AreaChart({ data }) {
   )
 }
 
-function DonutChart({ pending, confirmed, cancelled, readyForPickup = 0 }) {
-  const total = pending + confirmed + cancelled + readyForPickup
+function DonutChart({ pending, confirmed, cancelled, readyForPickup = 0, completed = 0 }) {
+  const total = pending + confirmed + cancelled + readyForPickup + completed
   const r = 36, cx = 50, cy = 50
   const circ = 2 * Math.PI * r
   const segs = [
     { count: confirmed,        color: '#10b981' },
     { count: readyForPickup,   color: '#0d9488' },
+    { count: completed,        color: '#3b82f6' },
     { count: pending,          color: '#f59e0b' },
     { count: cancelled,        color: '#ef4444' },
   ]
@@ -321,19 +331,19 @@ const TABS = [
 ]
 
 // ── Overview ──────────────────────────────────────────────────────────────────
-function OverviewTab({ pw, refreshKey }) {
+function OverviewTab({ pw, onRefresh }) {
   const [d, setD] = useState(null)
 
   useEffect(() => {
     setD(null)
     Promise.all([
-      fetch('/api/reservations').then(r => r.json()),
-      fetch('/api/analytics/stats', { headers: { Authorization: `Bearer ${pw}` } }).then(r => r.json()),
-      fetch('/api/menu').then(r => r.json()),
+      fetch('/api/reservations', { cache: 'no-store' }).then(r => r.json()),
+      fetch('/api/analytics/stats', { cache: 'no-store', headers: { Authorization: `Bearer ${pw}` } }).then(r => r.json()),
+      fetch('/api/menu', { cache: 'no-store' }).then(r => r.json()),
     ]).then(([res, stats, menu]) =>
       setD({ reservations: res.reservations || [], visits: stats.visits || [], menuItems: menu.items || [] })
     )
-  }, [pw, refreshKey])
+  }, [pw])
 
   if (!d) return <Spinner />
 
@@ -343,8 +353,9 @@ function OverviewTab({ pw, refreshKey }) {
   const confirmed      = d.reservations.filter(r => r.status === 'confirmed').length
   const cancelled      = d.reservations.filter(r => r.status === 'cancelled').length
   const readyForPickup = d.reservations.filter(r => r.status === 'ready_for_pickup').length
+  const completed      = d.reservations.filter(r => r.status === 'completed').length
   const totalRevenue   = d.reservations
-    .filter(r => r.status === 'confirmed' || r.status === 'ready_for_pickup')
+    .filter(r => ['confirmed','ready_for_pickup','completed'].includes(r.status))
     .reduce((sum, r) => sum + (parsePrice(r.notes) || 0), 0)
 
   const days = Array.from({ length: 14 }, (_, i) => {
@@ -362,6 +373,25 @@ function OverviewTab({ pw, refreshKey }) {
 
   return (
     <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-fraunces font-black text-xl text-charcoal leading-tight">Papan Pemuka</h2>
+          <p className="text-muted text-xs mt-0.5">Ringkasan tempahan dan aktiviti laman web</p>
+        </div>
+        {onRefresh && (
+          <button onClick={onRefresh}
+            className="inline-flex items-center gap-2 bg-white border border-brown/15 hover:bg-stone
+              text-charcoal text-xs font-semibold px-3.5 py-2 rounded-full transition-colors"
+            title="Muat semula data terkini">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Segar Semula
+          </button>
+        )}
+      </div>
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(c => (
@@ -378,7 +408,7 @@ function OverviewTab({ pw, refreshKey }) {
         <div>
           <div className="text-muted text-xs mb-1 font-semibold uppercase tracking-wider">Anggaran Hasil</div>
           <div className="font-fraunces font-black text-3xl text-forest">RM {totalRevenue.toFixed(2)}</div>
-          <div className="text-muted text-xs mt-1">{confirmed + readyForPickup} tempahan confirmed &amp; siap ambil</div>
+          <div className="text-muted text-xs mt-1">{confirmed + readyForPickup + completed} tempahan aktif</div>
         </div>
         <div className="w-14 h-14 bg-forest/8 rounded-2xl flex items-center justify-center shrink-0">
           <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -413,12 +443,13 @@ function OverviewTab({ pw, refreshKey }) {
           <p className="text-muted text-xs mb-5">Agihan mengikut status</p>
           <div className="flex-1 flex flex-col items-center justify-center gap-5">
             <div className="w-28 h-28">
-              <DonutChart pending={pending} confirmed={confirmed} cancelled={cancelled} readyForPickup={readyForPickup} />
+              <DonutChart pending={pending} confirmed={confirmed} cancelled={cancelled} readyForPickup={readyForPickup} completed={completed} />
             </div>
             <div className="w-full space-y-2.5">
               {[
                 { label: 'Disahkan',   count: confirmed,        dot: 'bg-emerald-400' },
                 { label: 'Siap Ambil', count: readyForPickup,   dot: 'bg-teal-500'    },
+                { label: 'Selesai',    count: completed,        dot: 'bg-blue-500'    },
                 { label: 'Pending',    count: pending,          dot: 'bg-amber-400'   },
                 { label: 'Dibatal',    count: cancelled,        dot: 'bg-red-400'     },
               ].map(s => (
@@ -456,7 +487,7 @@ function OverviewTab({ pw, refreshKey }) {
               <div className="flex items-center gap-3">
                 <span className="text-forest font-bold text-sm">{r.pax} biji</span>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLS[r.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                  {r.status === 'ready_for_pickup' ? 'Siap Ambil' : r.status}
+                  {STATUS_LABEL[r.status] || r.status}
                 </span>
               </div>
             </div>
@@ -481,28 +512,49 @@ function ReservationsTab({ pw, onStatusChange }) {
 
   const load = useCallback(() => {
     setLoading(true)
-    fetch('/api/reservations').then(r => r.json()).then(d => { setRows(d.reservations || []); setLoading(false) })
+    fetch('/api/reservations', { cache: 'no-store' }).then(r => r.json()).then(d => { setRows(d.reservations || []); setLoading(false) })
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  const counts = { all: rows.length, pending: rows.filter(r => r.status === 'pending').length, confirmed: rows.filter(r => r.status === 'confirmed').length, ready_for_pickup: rows.filter(r => r.status === 'ready_for_pickup').length, cancelled: rows.filter(r => r.status === 'cancelled').length }
+  const counts = { all: rows.length, pending: rows.filter(r => r.status === 'pending').length, confirmed: rows.filter(r => r.status === 'confirmed').length, ready_for_pickup: rows.filter(r => r.status === 'ready_for_pickup').length, completed: rows.filter(r => r.status === 'completed').length, cancelled: rows.filter(r => r.status === 'cancelled').length }
   const shown = rows.filter(r => (filter === 'all' || r.status === filter) && (!search || r.name?.toLowerCase().includes(search.toLowerCase()) || r.phone?.includes(search)))
 
   async function setStatus(id, status) {
+    const prev = rows.find(r => r.id === id)?.status
     setBusy(id)
-    await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ status }) })
     setRows(p => p.map(r => r.id === id ? { ...r, status } : r))
     if (detail?.id === id) setDetail(p => ({ ...p, status }))
-    onStatusChange?.()
-    setBusy(null)
+    try {
+      const res = await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ status }) })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || `HTTP ${res.status}`)
+      }
+      onStatusChange?.()
+    } catch (err) {
+      setRows(p => p.map(r => r.id === id ? { ...r, status: prev } : r))
+      if (detail?.id === id) setDetail(p => ({ ...p, status: prev }))
+      alert(`Gagal kemaskini status: ${err.message}`)
+    } finally {
+      setBusy(null)
+    }
   }
 
   async function del(id) {
     if (!confirm('Padam tempahan ini?')) return
-    await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
-    setRows(p => p.filter(r => r.id !== id))
-    setDetail(null)
+    try {
+      const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || `HTTP ${res.status}`)
+      }
+      setRows(p => p.filter(r => r.id !== id))
+      setDetail(null)
+      onStatusChange?.()
+    } catch (err) {
+      alert(`Gagal padam: ${err.message}`)
+    }
   }
 
   function csv() {
@@ -548,6 +600,7 @@ function ReservationsTab({ pw, onStatusChange }) {
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="ready_for_pickup">Siap Ambil</option>
+                <option value="completed">Selesai</option>
                 <option value="cancelled">Cancelled</option>
               </select>
               <button onClick={() => del(detail.id)}
@@ -562,7 +615,7 @@ function ReservationsTab({ pw, onStatusChange }) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2 flex-wrap">
-          {[['all','Semua'],['pending','Pending'],['confirmed','Confirmed'],['ready_for_pickup','Siap Ambil'],['cancelled','Cancelled']].map(([s,label]) => (
+          {[['all','Semua'],['pending','Pending'],['confirmed','Confirmed'],['ready_for_pickup','Siap Ambil'],['completed','Selesai'],['cancelled','Cancelled']].map(([s,label]) => (
             <button key={s} onClick={() => setFilter(s)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${filter === s ? 'bg-charcoal text-cream' : 'bg-white text-muted border border-brown/20 hover:border-brown/40'}`}>
               {label} ({counts[s] ?? 0})
@@ -621,6 +674,7 @@ function ReservationsTab({ pw, onStatusChange }) {
                         <option value="pending">pending</option>
                         <option value="confirmed">confirmed</option>
                         <option value="ready_for_pickup">siap ambil</option>
+                        <option value="completed">selesai</option>
                         <option value="cancelled">cancelled</option>
                       </select>
                     </td>
@@ -650,8 +704,35 @@ const CATS = [
 ]
 const BLANK = { category_id: 'apam', name: '', description: '', price: '', min_order: 50, image_url: '', is_available: true }
 
-function MenuForm({ data, onChange, onSave, onCancel, saving }) {
+function MenuForm({ data, onChange, onSave, onCancel, saving, pw }) {
   const inp = 'w-full border border-brown/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30'
+  const [uploading, setUploading] = useState(false)
+  const [upErr, setUpErr]         = useState('')
+
+  async function handleFile(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUpErr('')
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res  = await fetch('/api/menu/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${pw}` },
+        body: fd,
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error || 'Muat naik gagal')
+      onChange('image_url', body.url)
+    } catch (err) {
+      setUpErr(err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -680,8 +761,35 @@ function MenuForm({ data, onChange, onSave, onCancel, saving }) {
         </div>
       </div>
       <div>
-        <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1.5">URL Gambar</label>
-        <input value={data.image_url || ''} onChange={e => onChange('image_url', e.target.value)} placeholder="https://..." className={inp} />
+        <label className="text-xs font-semibold text-muted uppercase tracking-wider block mb-1.5">Gambar</label>
+        <div className="flex items-start gap-3">
+          {/* Preview */}
+          <div className="w-24 h-24 shrink-0 rounded-xl overflow-hidden border border-brown/15
+            bg-gradient-to-br from-cream to-stone flex items-center justify-center">
+            {data.image_url ? (
+              <img src={data.image_url} alt="" className="w-full h-full object-cover"
+                onError={e => { e.currentTarget.style.display = 'none' }} />
+            ) : (
+              <svg className="w-7 h-7 text-muted/40" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            )}
+          </div>
+          {/* Controls */}
+          <div className="flex-1 space-y-2">
+            <label className={`block w-full text-center border border-brown/20 rounded-xl px-3 py-2.5 text-sm font-semibold
+              ${uploading ? 'bg-stone text-muted cursor-not-allowed' : 'bg-white text-charcoal hover:bg-stone cursor-pointer'}
+              transition-colors`}>
+              {uploading ? 'Memuat naik...' : 'Muat Naik Gambar'}
+              <input type="file" accept="image/jpeg,image/png,image/webp"
+                disabled={uploading} onChange={handleFile} className="hidden" />
+            </label>
+            <input value={data.image_url || ''} onChange={e => onChange('image_url', e.target.value)}
+              placeholder="Atau tampal URL gambar..." className={`${inp} text-xs`} />
+            {upErr && <p className="text-terra text-xs">{upErr}</p>}
+            <p className="text-muted/70 text-[0.68rem]">JPG / PNG / WEBP, maksimum 2 MB.</p>
+          </div>
+        </div>
       </div>
       {/* Toggle */}
       <div className="flex items-center justify-between py-1">
@@ -724,23 +832,40 @@ function MenuTab({ pw }) {
 
   async function saveItem() {
     setSaving(true)
-    if (modal === 'add') {
-      const cat  = CATS.find(c => c.id === formData.category_id) || CATS[0]
-      const res  = await fetch('/api/menu', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ ...formData, category_name: cat.name, category_emoji: cat.emoji }) })
-      const data = await res.json()
-      if (data.item) setItems(p => [...p, data.item])
-    } else {
-      const res  = await fetch(`/api/menu/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify(formData) })
-      const data = await res.json()
-      if (data.item) setItems(p => p.map(i => i.id === editId ? data.item : i))
+    try {
+      let res, data
+      if (modal === 'add') {
+        const cat = CATS.find(c => c.id === formData.category_id) || CATS[0]
+        res  = await fetch('/api/menu', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ ...formData, category_name: cat.name, category_emoji: cat.emoji }) })
+        data = await res.json()
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+        setItems(p => [...p, data.item])
+      } else {
+        res  = await fetch(`/api/menu/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify(formData) })
+        data = await res.json()
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+        setItems(p => p.map(i => i.id === editId ? data.item : i))
+      }
+      closeModal()
+    } catch (err) {
+      alert(`Gagal simpan: ${err.message}`)
+    } finally {
+      setSaving(false)
     }
-    setSaving(false); closeModal()
   }
 
   async function del(id) {
     if (!confirm('Padam item menu ini?')) return
-    await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
-    setItems(p => p.filter(i => i.id !== id))
+    try {
+      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || `HTTP ${res.status}`)
+      }
+      setItems(p => p.filter(i => i.id !== id))
+    } catch (err) {
+      alert(`Gagal padam: ${err.message}`)
+    }
   }
 
   const grouped = CATS.map(cat => ({ ...cat, items: items.filter(i => i.category_id === cat.id) }))
@@ -748,7 +873,7 @@ function MenuTab({ pw }) {
   return (
     <div className="space-y-5">
       <Modal open={!!modal} onClose={closeModal} title={modal === 'add' ? 'Tambah Item Baharu' : 'Edit Item Menu'}>
-        <MenuForm data={formData} onChange={change} onSave={saveItem} onCancel={closeModal} saving={saving} />
+        <MenuForm data={formData} onChange={change} onSave={saveItem} onCancel={closeModal} saving={saving} pw={pw} />
       </Modal>
 
       <div className="flex items-center justify-between">
@@ -1121,7 +1246,7 @@ export default function AdminPage() {
 
         {/* Content */}
         <div className="p-6">
-          {tab === 'overview'     && <OverviewTab     pw={pw} refreshKey={tick} />}
+          {tab === 'overview'     && <OverviewTab     key={tick} pw={pw} onRefresh={bump} />}
           {tab === 'reservations' && <ReservationsTab pw={pw} onStatusChange={bump} />}
           {tab === 'menu'         && <MenuTab         pw={pw} />}
           {tab === 'content'      && <ContentTab      pw={pw} />}

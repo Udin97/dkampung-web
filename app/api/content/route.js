@@ -11,6 +11,8 @@ function auth(request) {
   return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const { data, error } = await supabase
     .from('page_content')
@@ -25,9 +27,17 @@ export async function GET() {
 export async function PUT(request) {
   if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
+  }
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
   const { page, key, value } = await request.json()
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('page_content')
     .upsert({ page, key, value, updated_at: new Date().toISOString() }, { onConflict: 'page,key' })
     .select()
