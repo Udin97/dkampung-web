@@ -1,13 +1,46 @@
 import Link from 'next/link'
+import Image from 'next/image'
+import { createClient } from '@supabase/supabase-js'
 
-const FEATURED = [
-  { name: 'Apam Putih',    price: 'RM 1.50', tag: 'Popular',    emoji: '🫓' },
-  { name: 'Kaswi Pandan',  price: 'RM 1.80', tag: 'Bestseller', emoji: '🍃' },
-  { name: 'Tepung Pelita', price: 'RM 2.00', tag: 'Klasik',     emoji: '🍮' },
-  { name: 'Kaswi Coklat',  price: 'RM 1.80', tag: 'Kegemaran',  emoji: '🍫' },
-  { name: 'Apam Pandan',   price: 'RM 1.50', tag: '',           emoji: '🌿' },
-  { name: 'Kaswi Jagung',  price: 'RM 1.80', tag: '',           emoji: '🌽' },
+const FALLBACK_FEATURED = [
+  { name: 'Apam Putih',    price: 'RM 1.50', tag: 'Popular',    emoji: '🫓', image: null },
+  { name: 'Kaswi Pandan',  price: 'RM 1.80', tag: 'Bestseller', emoji: '🍃', image: null },
+  { name: 'Tepung Pelita', price: 'RM 2.00', tag: 'Klasik',     emoji: '🍮', image: null },
+  { name: 'Kaswi Coklat',  price: 'RM 1.80', tag: 'Kegemaran',  emoji: '🍫', image: null },
+  { name: 'Apam Pandan',   price: 'RM 1.50', tag: '',           emoji: '🌿', image: null },
+  { name: 'Kaswi Jagung',  price: 'RM 1.80', tag: '',           emoji: '🌽', image: null },
 ]
+
+const TAG_BY_NAME = {
+  'Apam Putih':    'Popular',
+  'Kaswi Pandan':  'Bestseller',
+  'Tepung Pelita': 'Klasik',
+  'Kaswi Coklat':  'Kegemaran',
+}
+
+async function getFeatured() {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+    const { data, error } = await supabase
+      .from('menu_items').select('*').eq('is_available', true)
+      .order('sort_order').limit(6)
+
+    if (error || !data?.length) return FALLBACK_FEATURED
+
+    return data.filter(d => d.name).map(item => ({
+      name:  item.name,
+      price: `RM ${parseFloat(item.price).toFixed(2)}`,
+      tag:   TAG_BY_NAME[item.name] || '',
+      emoji: item.category_emoji || '🍰',
+      image: item.image_url || null,
+    }))
+  } catch {
+    return FALLBACK_FEATURED
+  }
+}
 
 const FEATURES = [
   {
@@ -50,7 +83,8 @@ const FEATURES = [
 
 const TICKER = ['Segar Setiap Pagi', 'Halal & Bersih', 'Min. 50 Biji', 'Tempahan Kenduri', 'Resipi Turun-Temurun', 'Tiga Cawangan']
 
-export default function HomePage() {
+export default async function HomePage() {
+  const FEATURED = await getFeatured()
   return (
     <>
       {/* ══════════ HERO ══════════════════════════════════════════ */}
@@ -134,9 +168,15 @@ export default function HomePage() {
               <div className="divide-y divide-white/[0.04]">
                 {FEATURED.map(item => (
                   <div key={item.name}
-                    className="flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.04] transition-colors group">
-                    <div className="flex items-center gap-3.5">
-                      <span className="text-lg opacity-75">{item.emoji}</span>
+                    className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.04] transition-colors group">
+                    <div className="flex items-center gap-3">
+                      <span className="w-10 h-10 shrink-0 rounded-lg bg-white/[0.06] border border-white/[0.05]
+                        flex items-center justify-center text-lg opacity-80 group-hover:opacity-100 transition-opacity
+                        overflow-hidden relative">
+                        {item.image ? (
+                          <Image src={item.image} alt={item.name} fill className="object-cover" sizes="40px" />
+                        ) : item.emoji}
+                      </span>
                       <div>
                         <span className="text-cream text-sm font-medium group-hover:text-cream transition-colors">
                           {item.name}
@@ -268,7 +308,13 @@ export default function HomePage() {
                 className={`flex items-center justify-between px-6 py-4 hover:bg-stone/80
                   transition-colors group ${i < FEATURED.length - 1 ? 'border-b border-brown/6' : ''}`}>
                 <div className="flex items-center gap-4">
-                  <span className="text-xl w-8 text-center leading-none">{item.emoji}</span>
+                  <span className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-cream to-stone
+                    border border-brown/8 flex items-center justify-center text-2xl select-none
+                    overflow-hidden relative">
+                    {item.image ? (
+                      <Image src={item.image} alt={item.name} fill className="object-cover" sizes="48px" />
+                    ) : item.emoji}
+                  </span>
                   <div>
                     <span className="font-medium text-charcoal group-hover:text-forest transition-colors">
                       {item.name}

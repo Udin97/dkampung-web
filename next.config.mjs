@@ -6,6 +6,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
+      {
+        protocol: "https",
+        hostname: "vuinikffbknoznelenaf.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
   },
 };

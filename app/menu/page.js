@@ -62,16 +62,19 @@ const CAT_ACCENTS = [
   { dot: 'bg-brown2',  label: 'text-brown2' },
 ]
 
-function MenuCard({ item }) {
+function MenuCard({ item, emoji }) {
   return (
     <div className="bg-stone rounded-2xl p-4 flex flex-col gap-2.5
       hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)]
       transition-all duration-200 border border-transparent hover:border-brown/8">
-      {item.image && (
-        <div className="w-full h-28 rounded-xl overflow-hidden relative">
+      <div className="w-full h-28 rounded-xl overflow-hidden relative
+        bg-gradient-to-br from-cream to-stone/60 flex items-center justify-center">
+        {item.image ? (
           <Image src={item.image} alt={item.name} fill className="object-cover" />
-        </div>
-      )}
+        ) : (
+          <span className="text-5xl opacity-55 select-none">{emoji}</span>
+        )}
+      </div>
       <div>
         <h3 className="font-fraunces font-semibold text-charcoal text-[0.95rem] leading-tight">
           {item.name}
@@ -107,7 +110,7 @@ function CategoryCard({ cat, idx }) {
       </div>
       <div className="p-4 flex flex-col gap-3">
         {cat.items.map(item => (
-          <MenuCard key={item.name} item={item} />
+          <MenuCard key={item.name} item={item} emoji={cat.emoji} />
         ))}
       </div>
     </div>
