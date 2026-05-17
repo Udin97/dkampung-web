@@ -130,9 +130,17 @@ function Spinner() {
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
-  const [pw, setPw]   = useState('')
-  const [err, setErr] = useState('')
+  const [pw, setPw]     = useState('')
+  const [err, setErr]   = useState('')
   const [busy, setBusy] = useState(false)
+  const [show, setShow] = useState(false)
+
+  const hour = new Date().getHours()
+  const greeting =
+    hour < 12 ? { text: 'Selamat Pagi',       emoji: 'sun'  } :
+    hour < 15 ? { text: 'Selamat Tengah Hari', emoji: 'sun'  } :
+    hour < 19 ? { text: 'Selamat Petang',      emoji: 'dusk' } :
+                { text: 'Selamat Malam',       emoji: 'moon' }
 
   async function submit(e) {
     e.preventDefault()
@@ -142,37 +150,131 @@ function LoginScreen({ onLogin }) {
       body: JSON.stringify({ password: pw }),
     })
     if (res.ok) { sessionStorage.setItem('adminPw', pw); onLogin(pw) }
-    else setErr('Kata laluan salah.')
+    else setErr('Kata laluan tidak betul. Sila cuba lagi.')
     setBusy(false)
   }
 
   return (
-    <div className="min-h-screen bg-charcoal flex items-center justify-center px-4" style={{
-      backgroundImage: 'radial-gradient(circle, rgba(201,168,76,0.07) 1px, transparent 1px)',
-      backgroundSize: '32px 32px',
-    }}>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gold rounded-2xl mb-5
-            font-fraunces font-black text-charcoal text-xl shadow-[0_8px_30px_rgba(201,168,76,0.4)]">DK</div>
-          <h1 className="font-fraunces font-black text-3xl text-cream mb-1">Admin Portal</h1>
-          <p className="text-cream/40 text-sm">DKAMPUNG Dashboard</p>
-        </div>
-        <form onSubmit={submit} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-4">
-          <div>
-            <label className="text-cream/50 text-xs font-semibold tracking-wider uppercase block mb-2">Kata Laluan</label>
-            <input type="password" value={pw} onChange={e => setPw(e.target.value)}
-              placeholder="••••••••" autoFocus
-              className="w-full bg-white/8 border border-white/12 text-cream placeholder:text-cream/20 rounded-xl px-4 py-3 text-sm
-                focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40" />
+    <div className="fixed inset-0 bg-cream overflow-hidden flex items-center justify-center px-5">
+
+      {/* Warm gradient blobs */}
+      <div className="absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(201,168,76,0.28) 0%, transparent 70%)' }} />
+      <div className="absolute -bottom-40 -right-32 w-[460px] h-[460px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(27,67,50,0.18) 0%, transparent 70%)' }} />
+      <div className="absolute top-1/3 right-1/4 w-[260px] h-[260px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(193,90,55,0.10) 0%, transparent 70%)' }} />
+
+      {/* Dot grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.04]" style={{
+        backgroundImage: 'radial-gradient(circle, #1B4332 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+      }} />
+
+      <div className="relative w-full max-w-[400px]">
+
+        {/* Greeting badge */}
+        <div className="flex justify-center mb-7">
+          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-brown/12 rounded-full pl-2 pr-4 py-1.5
+            shadow-[0_4px_20px_rgba(28,16,8,0.04)]">
+            <span className="w-6 h-6 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+              {greeting.emoji === 'sun' && (
+                <svg className="w-3.5 h-3.5 text-gold" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              )}
+              {greeting.emoji === 'dusk' && (
+                <svg className="w-3.5 h-3.5 text-terra" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M5 18a7 7 0 0114 0M12 3v3m9 6h-3M3 12h3m12.364-6.364l-2.121 2.121M7.757 7.757L5.636 5.636"/>
+                </svg>
+              )}
+              {greeting.emoji === 'moon' && (
+                <svg className="w-3.5 h-3.5 text-forest" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              )}
+            </span>
+            <span className="text-charcoal/70 text-xs font-medium tracking-wide">{greeting.text}</span>
           </div>
-          {err && <p className="text-red-400 text-sm text-center">{err}</p>}
-          <button type="submit" disabled={busy}
-            className="w-full bg-gold text-charcoal py-3 rounded-xl font-bold text-sm tracking-wide
-              hover:opacity-90 transition-opacity disabled:opacity-50 shadow-[0_4px_20px_rgba(201,168,76,0.3)]">
-            {busy ? 'Mengesahkan...' : 'Log Masuk →'}
+        </div>
+
+        {/* Heading */}
+        <div className="text-center mb-9">
+          <div className="font-fraunces font-black text-2xl tracking-[5px] mb-1 select-none">
+            <span className="text-charcoal">DK</span><span className="text-gold">AMPUNG</span>
+          </div>
+          <h1 className="font-fraunces text-[2.4rem] leading-[1.05] text-charcoal mb-3">
+            Selamat <span className="italic font-normal text-forest2">Kembali</span>
+          </h1>
+          <p className="text-muted text-sm max-w-[280px] mx-auto leading-relaxed">
+            Sila log masuk untuk uruskan tempahan, menu, dan pelanggan.
+          </p>
+        </div>
+
+        {/* Card */}
+        <form onSubmit={submit}
+          className="bg-white rounded-3xl border border-brown/8 p-7 space-y-5"
+          style={{ boxShadow: '0 24px 60px rgba(28,16,8,0.07), 0 4px 14px rgba(28,16,8,0.04)' }}>
+
+          {/* Password */}
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <label className="text-charcoal/55 text-[0.66rem] font-bold tracking-[2.5px] uppercase">Kata Laluan</label>
+              <button type="button" onClick={() => setShow(s => !s)}
+                className="text-muted/70 hover:text-charcoal text-[0.66rem] font-semibold tracking-wide transition-colors">
+                {show ? 'Sorok' : 'Tunjuk'}
+              </button>
+            </div>
+            <div className="relative">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted/55" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <input type={show ? 'text' : 'password'} value={pw} onChange={e => { setPw(e.target.value); setErr('') }}
+                placeholder="Masukkan kata laluan anda"
+                autoFocus
+                className="w-full bg-stone/70 border border-transparent text-charcoal placeholder:text-muted/45
+                  rounded-2xl pl-11 pr-4 py-3.5 text-sm
+                  focus:outline-none focus:bg-white focus:border-gold/40
+                  focus:shadow-[0_0_0_4px_rgba(201,168,76,0.10)]
+                  transition-all" />
+            </div>
+            {err && (
+              <p className="text-red-500 text-xs mt-2.5 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"/>
+                </svg>
+                {err}
+              </p>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button type="submit" disabled={busy || !pw}
+            className="w-full bg-charcoal text-cream py-3.5 rounded-2xl font-semibold text-[0.88rem] tracking-wide
+              hover:bg-forest transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2"
+            style={{ boxShadow: '0 8px 24px rgba(12,23,16,0.18)' }}>
+            {busy ? (
+              <>
+                <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin" />
+                <span>Mengesahkan...</span>
+              </>
+            ) : (
+              <>
+                <span>Log Masuk</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+              </>
+            )}
           </button>
         </form>
+
+        {/* Footer hint */}
+        <p className="text-center text-muted/60 text-[0.72rem] mt-6 leading-relaxed">
+          Sistem hanya untuk staf DKAMPUNG.<br />
+          Untuk bantuan, hubungi pentadbir.
+        </p>
       </div>
     </div>
   )
