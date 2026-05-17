@@ -13,12 +13,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [scrolled,  setScrolled]  = useState(false)
   const [menuOpen,  setMenuOpen]  = useState(false)
-  const pathname = usePathname()
-
-  if (pathname.startsWith('/admin')) return null
-
-  const isHome  = pathname === '/'
-  const isLight = isHome && !scrolled
+  const pathname = usePathname() || ''
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -28,6 +23,11 @@ export default function Navbar() {
 
   // Close mobile menu on route change
   useEffect(() => { setMenuOpen(false) }, [pathname])
+
+  if (pathname.startsWith('/admin')) return null
+
+  const isHome  = pathname === '/'
+  const isLight = isHome && !scrolled
 
   return (
     <>
