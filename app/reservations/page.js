@@ -385,22 +385,24 @@ export default function ReservationsPage() {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}>
-          <div className="absolute inset-0 bg-charcoal/92" />
+          <div className="absolute inset-0 bg-charcoal" />
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'linear-gradient(180deg, rgba(12,23,16,1) 0%, rgba(12,23,16,0.85) 100%)',
+          }} />
           <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
             backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
             backgroundSize: '28px 28px',
           }} />
           <div className="relative flex-1 flex flex-col overflow-y-auto">
             <div className="mb-10">
-              <div className="text-[0.6rem] font-semibold tracking-[4px] uppercase text-gold mb-4">
+              <div className="text-[0.65rem] font-bold tracking-[4px] uppercase text-gold mb-4">
                 Tempahan Online
               </div>
               <h1 className="font-fraunces font-black text-cream leading-[0.88] mb-4"
-                style={{ fontSize: 'clamp(2.5rem,3.5vw,3.2rem)', textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
+                style={{ fontSize: 'clamp(2.5rem,3.5vw,3.2rem)' }}>
                 Buat<br />Tempahan
               </h1>
-              <p className="text-cream/90 text-sm leading-relaxed"
-                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
+              <p className="text-cream/90 text-[0.92rem] leading-relaxed">
                 Isi borang dan kami akan menghubungi anda dalam 24 jam untuk pengesahan muktamad.
               </p>
             </div>
@@ -408,17 +410,17 @@ export default function ReservationsPage() {
             <div className="space-y-5 mb-10">
               {[
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
                   title: 'Tempah 3 Hari Awal',
                   desc: 'Untuk pastikan kuih tersedia segar.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
                   title: 'Minimum 50 Biji',
                   desc: 'Jumlah keseluruhan minimum 50 biji.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
                   title: 'Pengesahan Email',
                   desc: 'Resit tempahan dihantar ke emel anda.',
                 },
@@ -426,8 +428,8 @@ export default function ReservationsPage() {
                 <div key={i.title} className="flex items-start gap-3.5">
                   {i.icon}
                   <div>
-                    <div className="text-cream text-sm font-semibold">{i.title}</div>
-                    <div className="text-cream/75 text-xs leading-relaxed mt-0.5">{i.desc}</div>
+                    <div className="text-cream text-[0.92rem] font-semibold">{i.title}</div>
+                    <div className="text-cream/80 text-[0.78rem] leading-relaxed mt-1">{i.desc}</div>
                   </div>
                 </div>
               ))}
