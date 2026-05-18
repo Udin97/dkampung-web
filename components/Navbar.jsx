@@ -77,7 +77,7 @@ export default function Navbar() {
             })}
           </ul>
           <Link href="/reservations"
-            className={`px-5 py-2 rounded-full text-[0.73rem] font-semibold tracking-wide transition-all duration-300
+            className={`px-5 py-2 rounded-full text-[0.73rem] font-semibold tracking-wide transition-all duration-150 active:scale-[0.94]
               ${isLight
                 ? 'bg-gold text-charcoal hover:bg-gold2'
                 : 'bg-charcoal text-cream hover:bg-forest'
@@ -130,7 +130,7 @@ export default function Navbar() {
         ))}
 
         <a href="https://wa.me/60143860742" target="_blank" rel="noopener noreferrer"
-          className="relative mt-10 bg-gold text-charcoal px-9 py-3.5 rounded-full text-sm font-bold tracking-wide">
+          className="relative mt-10 bg-gold text-charcoal px-9 py-3.5 rounded-full text-sm font-bold tracking-wide transition-all duration-150 active:scale-[0.96]">
           Buat Tempahan →
         </a>
       </div>

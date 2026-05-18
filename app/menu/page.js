@@ -68,7 +68,8 @@ function MenuCard({ item, emoji }) {
   return (
     <div className="bg-stone rounded-2xl p-4 flex flex-col gap-2.5
       hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)]
-      transition-all duration-200 border border-transparent hover:border-brown/8">
+      transition-all duration-200 border border-transparent hover:border-brown/8
+      active:scale-[0.98]">
       <div className="w-full aspect-square rounded-xl overflow-hidden relative
         bg-gradient-to-br from-cream to-stone/60 flex items-center justify-center">
         {item.image ? (
@@ -133,7 +134,13 @@ export default async function MenuPage() {
     <div className="min-h-screen bg-stone pt-[68px]">
 
       {/* ── Header ── */}
-      <div className="bg-charcoal relative overflow-hidden py-20 text-center px-6">
+      <div className="relative overflow-hidden py-20 text-center px-6"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}>
+        <div className="absolute inset-0 bg-charcoal/85" />
         <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
           backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
           backgroundSize: '32px 32px',
@@ -189,12 +196,12 @@ export default async function MenuPage() {
         <div className="flex gap-3 justify-center flex-wrap">
           <Link href="/reservations"
             className="bg-charcoal text-cream px-8 py-3.5 rounded-full font-semibold text-sm
-              hover:bg-forest transition-colors">
+              hover:bg-forest transition-all duration-150 active:scale-[0.96]">
             Buat Tempahan Sekarang →
           </Link>
           <a href="https://wa.me/60143860742" target="_blank" rel="noopener noreferrer"
             className="bg-[#25D366] text-white px-8 py-3.5 rounded-full font-semibold text-sm
-              hover:opacity-90 transition-opacity">
+              hover:opacity-90 transition-all duration-150 active:scale-[0.96]">
             WhatsApp
           </a>
         </div>

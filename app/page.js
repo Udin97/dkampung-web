@@ -90,9 +90,17 @@ export default async function HomePage() {
   return (
     <>
       {/* ══════════ HERO ══════════════════════════════════════════ */}
-      <section className="min-h-screen bg-charcoal relative overflow-hidden flex items-center">
+      <section className="min-h-screen relative overflow-hidden flex items-center"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}>
 
-        {/* Subtle dot-grid background */}
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-charcoal/82" />
+
+        {/* Subtle dot-grid texture */}
         <div className="absolute inset-0 pointer-events-none" style={{
           backgroundImage: 'radial-gradient(circle, rgba(201,168,76,0.10) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
@@ -145,14 +153,14 @@ export default async function HomePage() {
             <div className="flex gap-3 flex-wrap">
               <Link href="/menu"
                 className="inline-flex items-center gap-2 bg-gold text-charcoal px-7 py-3.5 rounded-full
-                  font-bold text-[0.82rem] tracking-wide hover:bg-gold2 transition-colors
-                  shadow-[0_8px_32px_rgba(201,168,76,0.28)]">
+                  font-bold text-[0.82rem] tracking-wide hover:bg-gold2 transition-all duration-150
+                  active:scale-[0.96] shadow-[0_8px_32px_rgba(201,168,76,0.28)]">
                 Lihat Menu →
               </Link>
               <Link href="/reservations"
                 className="inline-flex items-center gap-2 border border-white/14 text-cream/70 px-7 py-3.5
                   rounded-full font-semibold text-[0.82rem] tracking-wide
-                  hover:border-white/30 hover:text-cream transition-all">
+                  hover:border-white/30 hover:text-cream transition-all duration-150 active:scale-[0.96]">
                 Buat Tempahan
               </Link>
             </div>
@@ -234,7 +242,7 @@ export default async function HomePage() {
               <div key={f.title}
                 className="group bg-white rounded-2xl p-6 border border-brown/6
                   hover:border-forest/18 hover:shadow-[0_8px_32px_rgba(27,67,50,0.07)]
-                  transition-all duration-300 cursor-default">
+                  transition-all duration-200 active:scale-[0.97] cursor-default">
                 <div className="mb-4">{f.icon}</div>
                 <div className="font-semibold text-charcoal text-[0.88rem] mb-1.5 group-hover:text-forest transition-colors">
                   {f.title}
@@ -269,22 +277,28 @@ export default async function HomePage() {
             </p>
             <Link href="/contact"
               className="inline-flex items-center gap-2 bg-charcoal text-cream px-6 py-3
-                rounded-full font-semibold text-sm hover:bg-forest transition-colors">
+                rounded-full font-semibold text-sm hover:bg-forest transition-all duration-150 active:scale-[0.96]">
               Hubungi Kami →
             </Link>
           </div>
 
-          {/* Right — feature grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {FEATURES.map(f => (
-              <div key={f.title} className="flex items-start gap-3 bg-white rounded-2xl p-4 border border-brown/6">
-                <span className="shrink-0">{f.icon}</span>
-                <div>
-                  <div className="font-semibold text-charcoal text-sm mb-0.5">{f.title}</div>
-                  <div className="text-muted text-xs leading-relaxed">{f.desc}</div>
-                </div>
+          {/* Right — photo */}
+          <div className="relative rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
+            style={{ minHeight: '460px' }}>
+            <Image
+              src="https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&q=80"
+              alt="Penyediaan kuih tradisional DKAMPUNG"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 to-transparent" />
+            <div className="absolute bottom-6 left-6 right-6">
+              <div className="text-cream/90 font-fraunces font-semibold text-lg leading-tight">
+                Dibuat dengan kasih sayang, setiap hari
               </div>
-            ))}
+              <div className="text-cream/55 text-xs mt-1.5">Resipi turun-temurun, bahan semula jadi</div>
+            </div>
           </div>
         </div>
       </section>
@@ -348,7 +362,14 @@ export default async function HomePage() {
       </section>
 
       {/* ══════════ CTA BANNER ════════════════════════════════════ */}
-      <section className="py-28 bg-forest relative overflow-hidden">
+      <section className="py-28 relative overflow-hidden"
+        style={{
+          backgroundImage: 'url(https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=1920&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}>
+        {/* Forest overlay */}
+        <div className="absolute inset-0 bg-forest/90" />
         {/* Dot pattern */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.05]" style={{
           backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
@@ -369,13 +390,13 @@ export default async function HomePage() {
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/reservations"
               className="bg-gold text-charcoal px-8 py-3.5 rounded-full font-bold text-sm tracking-wide
-                hover:bg-gold2 transition-colors shadow-[0_8px_30px_rgba(201,168,76,0.22)]">
+                hover:bg-gold2 transition-all duration-150 active:scale-[0.96] shadow-[0_8px_30px_rgba(201,168,76,0.22)]">
               Buat Tempahan Online
             </Link>
             <a href="https://wa.me/60143860742?text=Assalamualaikum%2C%20saya%20ingin%20membuat%20tempahan%20kuih."
               target="_blank" rel="noopener noreferrer"
               className="bg-white/8 text-cream border border-white/14 px-8 py-3.5 rounded-full
-                font-semibold text-sm hover:bg-white/16 transition-colors">
+                font-semibold text-sm hover:bg-white/16 transition-all duration-150 active:scale-[0.96]">
               WhatsApp Terus
             </a>
           </div>
@@ -387,7 +408,7 @@ export default async function HomePage() {
         target="_blank" rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 w-13 h-13 bg-[#25D366] rounded-full flex items-center justify-center
           shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:scale-110 hover:shadow-[0_6px_28px_rgba(37,211,102,0.5)]
-          transition-all duration-200"
+          transition-all duration-150 active:scale-95"
         style={{ width: 52, height: 52 }}
         aria-label="WhatsApp">
         <svg className="w-6 h-6 fill-white" viewBox="0 0 24 24">

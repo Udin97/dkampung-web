@@ -353,12 +353,12 @@ export default function ReservationsPage() {
                 <div className="px-6 py-4 border-t border-brown/8 flex gap-2.5 sticky bottom-0 bg-white">
                   <button type="button" onClick={() => setConfirming(false)} disabled={loading}
                     className="flex-1 border border-brown/20 text-charcoal px-4 py-3 rounded-full font-semibold text-sm
-                      hover:bg-stone transition-colors disabled:opacity-40">
+                      hover:bg-stone transition-all duration-150 active:scale-[0.96] disabled:opacity-40">
                     Edit Semula
                   </button>
                   <button type="button" onClick={handleConfirm} disabled={loading}
                     className="flex-[1.4] bg-charcoal text-cream px-4 py-3 rounded-full font-semibold text-sm
-                      hover:bg-forest transition-colors disabled:opacity-50
+                      hover:bg-forest transition-all duration-150 active:scale-[0.96] disabled:opacity-50
                       flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(0,0,0,0.15)]">
                     {loading ? (
                       <>
@@ -379,7 +379,13 @@ export default function ReservationsPage() {
       <div className="grid md:grid-cols-[360px_1fr] min-h-[calc(100vh-68px)]">
 
         {/* ── Left panel ── */}
-        <div className="bg-charcoal relative overflow-hidden flex flex-col px-8 py-14 md:sticky md:top-[68px] md:h-[calc(100vh-68px)]">
+        <div className="relative overflow-hidden flex flex-col px-8 py-14 md:sticky md:top-[68px] md:h-[calc(100vh-68px)]"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}>
+          <div className="absolute inset-0 bg-charcoal/88" />
           <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
             backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
             backgroundSize: '28px 28px',
@@ -539,7 +545,7 @@ export default function ReservationsPage() {
                               onClick={() => decrement(item.name, item.min)}
                               disabled={qty === 0}
                               className="w-7 h-7 rounded-full border border-brown/20 flex items-center justify-center
-                                text-charcoal hover:bg-stone disabled:opacity-25 transition-colors font-bold text-sm">
+                                text-charcoal hover:bg-stone disabled:opacity-25 transition-all duration-100 active:scale-[0.88] font-bold text-sm">
                               −
                             </button>
                             <span className="w-9 text-center text-sm font-semibold text-charcoal tabular-nums">
@@ -548,7 +554,7 @@ export default function ReservationsPage() {
                             <button type="button"
                               onClick={() => increment(item.name, item.min)}
                               className="w-7 h-7 rounded-full bg-charcoal text-cream flex items-center justify-center
-                                hover:bg-forest transition-colors font-bold text-sm">
+                                hover:bg-forest transition-all duration-100 active:scale-[0.88] font-bold text-sm">
                               +
                             </button>
                           </div>
@@ -595,7 +601,7 @@ export default function ReservationsPage() {
           {/* Submit */}
           <button type="button" onClick={handleReview} disabled={loading}
             className="w-full bg-charcoal text-cream py-4 rounded-full font-semibold text-[0.9rem]
-              hover:bg-forest transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+              hover:bg-forest transition-all duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed
               shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
             Semak & Hantar Tempahan →
           </button>
