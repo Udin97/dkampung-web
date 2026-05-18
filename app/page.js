@@ -128,7 +128,7 @@ export default async function HomePage() {
               <span className="block text-cream font-black tracking-[-2px]">Kuih</span>
               <span className="block text-gold font-normal italic tracking-[-1px]">Tradisional</span>
               <span className="block font-black tracking-[-2px]"
-                style={{ WebkitTextStroke: '1.5px rgba(245,230,200,0.40)', color: 'transparent' }}>
+                style={{ WebkitTextStroke: '2px rgba(245,230,200,0.9)', color: 'transparent' }}>
                 Terbaik
               </span>
             </h1>
@@ -144,7 +144,7 @@ export default async function HomePage() {
               {[{ num: '3', label: 'Cawangan' }, { num: '10+', label: 'Jenis Kuih' }, { num: '500+', label: 'Pelanggan/Bln' }].map((s, i) => (
                 <div key={s.label} className={`pr-10 ${i > 0 ? 'pl-10 border-l border-white/10' : ''}`}>
                   <div className="font-fraunces font-black text-4xl text-gold leading-none">{s.num}</div>
-                  <div className="text-[0.6rem] tracking-[2.5px] text-cream/55 uppercase mt-2">{s.label}</div>
+                  <div className="text-[0.65rem] tracking-[2.5px] text-cream/85 uppercase mt-2 font-medium">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -292,12 +292,12 @@ export default async function HomePage() {
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/40 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6">
-              <div className="text-cream/90 font-fraunces font-semibold text-lg leading-tight">
+              <div className="text-cream font-fraunces font-semibold text-xl leading-tight drop-shadow-md">
                 Dibuat dengan kasih sayang, setiap hari
               </div>
-              <div className="text-cream/55 text-xs mt-1.5">Resipi turun-temurun, bahan semula jadi</div>
+              <div className="text-cream/85 text-sm mt-2 drop-shadow">Resipi turun-temurun, bahan semula jadi</div>
             </div>
           </div>
         </div>
