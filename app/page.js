@@ -92,7 +92,7 @@ export default async function HomePage() {
       {/* ══════════ HERO ══════════════════════════════════════════ */}
       <section className="min-h-screen relative overflow-hidden flex items-center"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1679541946014-a47f1ec0dc1a?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
@@ -286,7 +286,7 @@ export default async function HomePage() {
           <div className="relative rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
             style={{ minHeight: '460px' }}>
             <Image
-              src="https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&q=80"
+              src="https://images.unsplash.com/photo-1652445698884-ac3a04356e5f?w=800&q=80"
               alt="Penyediaan kuih tradisional DKAMPUNG"
               fill
               className="object-cover"
@@ -364,7 +364,7 @@ export default async function HomePage() {
       {/* ══════════ CTA BANNER ════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1677921755291-c39158477b8e?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>

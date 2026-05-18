@@ -136,7 +136,7 @@ export default async function MenuPage() {
       {/* ── Header ── */}
       <div className="relative overflow-hidden py-20 text-center px-6"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1668966778853-5a6b342478c8?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>

@@ -381,7 +381,7 @@ export default function ReservationsPage() {
         {/* ── Left panel ── */}
         <div className="relative overflow-hidden flex flex-col px-8 py-14 md:sticky md:top-[68px] md:h-[calc(100vh-68px)]"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566469503247-ea0307a39dee?w=800&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}>

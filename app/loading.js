@@ -3,7 +3,7 @@ export default function Loading() {
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center"
       style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=1920&q=80)',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1754617438035-712ddf5500ef?w=1920&q=80)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}

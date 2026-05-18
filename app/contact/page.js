@@ -50,7 +50,7 @@ export default function ContactPage() {
       {/* ── Header ── */}
       <div className="relative overflow-hidden py-20 text-center px-6"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1756133570715-1b931bfb4482?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
