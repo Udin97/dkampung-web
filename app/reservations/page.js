@@ -385,21 +385,22 @@ export default function ReservationsPage() {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}>
-          <div className="absolute inset-0 bg-charcoal/88" />
+          <div className="absolute inset-0 bg-charcoal/92" />
           <div className="absolute inset-0 pointer-events-none opacity-[0.06]" style={{
             backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
             backgroundSize: '28px 28px',
           }} />
           <div className="relative flex-1 flex flex-col overflow-y-auto">
             <div className="mb-10">
-              <div className="text-[0.6rem] font-semibold tracking-[4px] uppercase text-gold/50 mb-4">
+              <div className="text-[0.6rem] font-semibold tracking-[4px] uppercase text-gold mb-4">
                 Tempahan Online
               </div>
               <h1 className="font-fraunces font-black text-cream leading-[0.88] mb-4"
-                style={{ fontSize: 'clamp(2.5rem,3.5vw,3.2rem)' }}>
+                style={{ fontSize: 'clamp(2.5rem,3.5vw,3.2rem)', textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
                 Buat<br />Tempahan
               </h1>
-              <p className="text-cream/40 text-sm leading-relaxed">
+              <p className="text-cream/90 text-sm leading-relaxed"
+                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
                 Isi borang dan kami akan menghubungi anda dalam 24 jam untuk pengesahan muktamad.
               </p>
             </div>
@@ -407,17 +408,17 @@ export default function ReservationsPage() {
             <div className="space-y-5 mb-10">
               {[
                 {
-                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
                   title: 'Tempah 3 Hari Awal',
                   desc: 'Untuk pastikan kuih tersedia segar.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
                   title: 'Minimum 50 Biji',
                   desc: 'Jumlah keseluruhan minimum 50 biji.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold/60 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
+                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
                   title: 'Pengesahan Email',
                   desc: 'Resit tempahan dihantar ke emel anda.',
                 },
@@ -425,8 +426,8 @@ export default function ReservationsPage() {
                 <div key={i.title} className="flex items-start gap-3.5">
                   {i.icon}
                   <div>
-                    <div className="text-cream/70 text-sm font-semibold">{i.title}</div>
-                    <div className="text-cream/35 text-xs leading-relaxed">{i.desc}</div>
+                    <div className="text-cream text-sm font-semibold">{i.title}</div>
+                    <div className="text-cream/75 text-xs leading-relaxed mt-0.5">{i.desc}</div>
                   </div>
                 </div>
               ))}
@@ -434,17 +435,17 @@ export default function ReservationsPage() {
 
             {/* Live order summary */}
             {totalQty > 0 && (
-              <div className="bg-white/5 rounded-2xl px-5 py-4 mb-6 border border-white/8">
-                <div className="text-[0.6rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-2">Ringkasan</div>
+              <div className="bg-white/8 rounded-2xl px-5 py-4 mb-6 border border-white/15">
+                <div className="text-[0.6rem] font-semibold tracking-[3px] uppercase text-gold mb-2">Ringkasan</div>
                 <div className="text-cream font-semibold">{totalQty} biji</div>
                 <div className="text-gold font-bold text-2xl font-fraunces">RM {totalPrice.toFixed(2)}</div>
               </div>
             )}
 
-            <div className="mt-auto pt-8 border-t border-white/8">
-              <p className="text-cream/30 text-xs mb-3">Atau hubungi terus:</p>
+            <div className="mt-auto pt-8 border-t border-white/15">
+              <p className="text-cream/75 text-xs mb-3">Atau hubungi terus:</p>
               <a href="https://wa.me/60143860742" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-gold/70 hover:text-gold transition-colors">
+                className="inline-flex items-center gap-2 text-sm text-gold hover:text-gold2 transition-colors">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 +60 14-386 0742
               </a>

@@ -140,18 +140,19 @@ export default async function MenuPage() {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
-        <div className="absolute inset-0 bg-charcoal/85" />
+        <div className="absolute inset-0 bg-charcoal/90" />
         <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
           backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }} />
         <div className="relative">
-          <div className="text-gold/50 text-[0.62rem] tracking-[4px] uppercase mb-4">Pilihan Kami</div>
+          <div className="text-gold text-[0.62rem] tracking-[4px] uppercase mb-4 font-semibold">Pilihan Kami</div>
           <h1 className="font-fraunces font-black text-cream leading-none mb-5"
-            style={{ fontSize: 'clamp(3.5rem,7vw,6rem)' }}>
+            style={{ fontSize: 'clamp(3.5rem,7vw,6rem)', textShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
             Menu Kuih
           </h1>
-          <p className="text-cream/40 max-w-sm mx-auto text-[0.9rem] leading-relaxed">
+          <p className="text-cream/90 max-w-sm mx-auto text-[0.9rem] leading-relaxed"
+            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
             Semua kuih dibuat segar setiap hari menggunakan bahan-bahan semula jadi pilihan.
             Tempahan minimum 50 biji jumlah.
           </p>
