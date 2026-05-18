@@ -27,6 +27,7 @@ module.exports = {
       fontFamily: {
         fraunces: ["Fraunces", "serif"],
         jost:     ["Jost", "sans-serif"],
+        playfair: ["Playfair Display", "serif"],
       },
     },
   },
