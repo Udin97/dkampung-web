@@ -24,6 +24,8 @@ const FALLBACK = [
   ]},
 ]
 
+export const revalidate = 0
+
 const CAT_ORDER = ['apam','kaswi','santan','nasi']
 
 async function getMenu() {

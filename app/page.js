@@ -2,6 +2,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
 
+export const revalidate = 0
+
 const FALLBACK_FEATURED = [
   { name: 'Apam Putih',    price: 'RM 1.50', tag: 'Popular',    emoji: '🫓', image: null },
   { name: 'Kaswi Pandan',  price: 'RM 1.80', tag: 'Bestseller', emoji: '🍃', image: null },
