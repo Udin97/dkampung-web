@@ -97,8 +97,13 @@ export default async function HomePage() {
           backgroundPosition: 'center',
         }}>
 
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-charcoal/82" />
+        {/* Dark overlay — base layer */}
+        <div className="absolute inset-0 bg-charcoal/85" />
+
+        {/* Left-side gradient so copy area is darkest, satay peeks through on the right */}
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(90deg, rgba(12,23,16,0.55) 0%, rgba(12,23,16,0) 100%)',
+        }} />
 
         {/* Subtle dot-grid texture */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -116,7 +121,7 @@ export default async function HomePage() {
           {/* ─ Left copy ─ */}
           <div>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 border border-gold/20 text-gold
+            <div className="inline-flex items-center gap-2.5 border border-gold/45 bg-charcoal/40 backdrop-blur-sm text-gold
               text-[0.63rem] tracking-[3px] uppercase px-4 py-1.5 rounded-full mb-10">
               <span className="w-1 h-1 bg-gold rounded-full animate-pulse" />
               Kuih Tradisional · Segar Setiap Hari
@@ -124,17 +129,18 @@ export default async function HomePage() {
 
             {/* Headline — 3 typographic lines */}
             <h1 className="font-fraunces leading-[0.85] mb-10 select-none"
-              style={{ fontSize: 'clamp(4.5rem,8.5vw,8rem)' }}>
+              style={{ fontSize: 'clamp(4.5rem,8.5vw,8rem)', textShadow: '0 4px 24px rgba(0,0,0,0.55)' }}>
               <span className="block text-cream font-black tracking-[-2px]">Kuih</span>
-              <span className="block text-gold font-normal italic tracking-[-1px]">Tradisional</span>
+              <span className="block text-gold2 font-normal italic tracking-[-1px]">Tradisional</span>
               <span className="block font-black tracking-[-2px]"
-                style={{ WebkitTextStroke: '2px rgba(245,230,200,0.9)', color: 'transparent' }}>
+                style={{ WebkitTextStroke: '2.5px rgba(254,249,240,0.95)', color: 'transparent' }}>
                 Terbaik
               </span>
             </h1>
 
             {/* Subtext */}
-            <p className="text-cream/70 text-[0.93rem] leading-[1.9] max-w-[390px] mb-12">
+            <p className="text-cream/95 text-[0.93rem] leading-[1.9] max-w-[390px] mb-12"
+              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.55)' }}>
               Dibuat dengan penuh kasih sayang menggunakan resipi turun-temurun.
               Segar setiap pagi — siap untuk majlis anda.
             </p>
@@ -158,9 +164,9 @@ export default async function HomePage() {
                 Lihat Menu →
               </Link>
               <Link href="/reservations"
-                className="inline-flex items-center gap-2 border border-white/14 text-cream/70 px-7 py-3.5
+                className="inline-flex items-center gap-2 border border-cream/35 bg-charcoal/30 backdrop-blur-sm text-cream px-7 py-3.5
                   rounded-full font-semibold text-[0.82rem] tracking-wide
-                  hover:border-white/30 hover:text-cream transition-all duration-150 active:scale-[0.96]">
+                  hover:border-cream/55 hover:bg-charcoal/50 transition-all duration-150 active:scale-[0.96]">
                 Buat Tempahan
               </Link>
             </div>
@@ -168,17 +174,17 @@ export default async function HomePage() {
 
           {/* ─ Right: floating menu card ─ */}
           <div className="hidden md:block">
-            <div className="bg-white/[0.045] backdrop-blur-sm border border-white/7 rounded-3xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/7 flex items-center justify-between">
-                <span className="text-gold/55 text-[0.62rem] tracking-[2.5px] uppercase font-semibold">Menu Hari Ini</span>
-                <Link href="/menu" className="text-cream/55 text-[0.72rem] hover:text-cream/80 transition-colors">
+            <div className="bg-charcoal/75 backdrop-blur-md border border-white/15 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+              <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+                <span className="text-gold text-[0.62rem] tracking-[2.5px] uppercase font-semibold">Menu Hari Ini</span>
+                <Link href="/menu" className="text-cream/80 text-[0.72rem] hover:text-cream transition-colors">
                   Lihat semua →
                 </Link>
               </div>
-              <div className="divide-y divide-white/[0.04]">
+              <div className="divide-y divide-white/[0.08]">
                 {FEATURED.map(item => (
                   <div key={item.name}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.04] transition-colors group">
+                    className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.06] transition-colors group">
                     <div className="flex items-center gap-3">
                       <span className="w-10 h-10 shrink-0 rounded-lg bg-white/[0.06] border border-white/[0.05]
                         flex items-center justify-center text-lg opacity-80 group-hover:opacity-100 transition-opacity
@@ -205,8 +211,8 @@ export default async function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="px-5 py-3 bg-white/[0.02] border-t border-white/5">
-                <p className="text-cream/45 text-[0.67rem]">Min. 50 biji · Segar setiap hari</p>
+              <div className="px-5 py-3 bg-charcoal/40 border-t border-white/10">
+                <p className="text-cream/75 text-[0.67rem]">Min. 50 biji · Segar setiap hari</p>
               </div>
             </div>
           </div>
