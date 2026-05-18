@@ -69,7 +69,7 @@ function MenuCard({ item, emoji }) {
     <div className="bg-stone rounded-2xl p-4 flex flex-col gap-2.5
       hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)]
       transition-all duration-200 border border-transparent hover:border-brown/8">
-      <div className="w-full h-28 rounded-xl overflow-hidden relative
+      <div className="w-full aspect-square rounded-xl overflow-hidden relative
         bg-gradient-to-br from-cream to-stone/60 flex items-center justify-center">
         {item.image ? (
           <Image src={item.image} alt={item.name} fill className="object-cover" />
