@@ -92,7 +92,7 @@ export default async function HomePage() {
       {/* ══════════ HERO ══════════════════════════════════════════ */}
       <section className="min-h-screen relative overflow-hidden flex items-center"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1679541946014-a47f1ec0dc1a?w=1920&q=80)',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1696385793103-71f51f6fd3b7?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
@@ -286,7 +286,7 @@ export default async function HomePage() {
           <div className="relative rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
             style={{ minHeight: '460px' }}>
             <Image
-              src="https://images.unsplash.com/photo-1652445698884-ac3a04356e5f?w=800&q=80"
+              src="https://images.unsplash.com/photo-1569058242252-623df46b5025?w=800&q=80"
               alt="Penyediaan kuih tradisional DKAMPUNG"
               fill
               className="object-cover"
