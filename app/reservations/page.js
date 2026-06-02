@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/fetcher'
 import {
   CalendarClock, Users, Mail, Phone, User, Clock, MapPin,
   ShoppingBasket, BadgeCheck, ShieldCheck, Utensils, MessageCircle,
@@ -83,11 +85,8 @@ function IconSelect({ icon, children, ...props }) {
 
 export default function ReservationsPage() {
   const [form, setForm]             = useState({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
-  const [branchNames, setBranchNames] = useState(['Taman Putra Perdana', 'Cyberjaya', 'Kota Warisan'])
   const [orderItems, setOrderItems] = useState({})
   const [specialNote, setSpecialNote] = useState('')
-  const [menu, setMenu]             = useState(MENU_FALLBACK)
-  const [availableSlots, setAvailableSlots] = useState(TIME_SLOTS)
   const [loading, setLoading]       = useState(false)
   const [success, setSuccess]       = useState(false)
   const [error, setError]           = useState('')
@@ -103,48 +102,35 @@ export default function ReservationsPage() {
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
 
-  useEffect(() => {
-    fetch('/api/branches')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.branches?.length) setBranchNames(d.branches.map(b => b.name)) })
-      .catch(() => {})
-  }, [])
+  const SWR_OPTS_STATIC = { dedupingInterval: 3_600_000, revalidateOnFocus: false }
+  const SWR_OPTS_SEMI   = { dedupingInterval: 300_000,   revalidateOnFocus: false }
 
-  useEffect(() => {
-    fetch('/api/content')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const entry = data?.content?.find(c => c.page === 'reservations' && c.key === 'available_times')
-        if (entry?.value) {
-          try { setAvailableSlots(JSON.parse(entry.value)) } catch {}
-        }
-      })
-      .catch(() => {})
-  }, [])
+  const { data: branchesData  } = useSWR('/api/branches', fetcher, SWR_OPTS_STATIC)
+  const { data: contentData   } = useSWR('/api/content',  fetcher, SWR_OPTS_SEMI)
+  const { data: menuData      } = useSWR('/api/menu',     fetcher, SWR_OPTS_SEMI)
 
-  useEffect(() => {
-    fetch('/api/menu')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data?.items?.length) return
-        const map = {}
-        data.items.forEach(item => {
-          const catId = item.category_id || 'other'
-          if (!map[catId]) {
-            map[catId] = { id: catId, category: item.category_name, emoji: item.category_emoji || '🍽', items: [] }
-          }
-          map[catId].items.push({
-            name:      item.name,
-            price:     parseFloat(item.price),
-            min_order: item.min_order ?? 50,
-            image_url: item.image_url || null,
-          })
-        })
-        const groups = Object.values(map)
-        if (groups.length) setMenu(groups)
-      })
-      .catch(() => {})
-  }, [])
+  const branchNames = useMemo(
+    () => branchesData?.branches?.map(b => b.name) || ['Taman Putra Perdana', 'Cyberjaya', 'Kota Warisan'],
+    [branchesData]
+  )
+
+  const availableSlots = useMemo(() => {
+    const entry = contentData?.content?.find(c => c.page === 'reservations' && c.key === 'available_times')
+    if (entry?.value) try { return JSON.parse(entry.value) } catch {}
+    return TIME_SLOTS
+  }, [contentData])
+
+  const menu = useMemo(() => {
+    if (!menuData?.items?.length) return MENU_FALLBACK
+    const map = {}
+    menuData.items.forEach(item => {
+      const catId = item.category_id || 'other'
+      if (!map[catId]) map[catId] = { id: catId, category: item.category_name, emoji: item.category_emoji || '🍽', items: [] }
+      map[catId].items.push({ name: item.name, price: parseFloat(item.price), min_order: item.min_order ?? 50, image_url: item.image_url || null })
+    })
+    const groups = Object.values(map)
+    return groups.length ? groups : MENU_FALLBACK
+  }, [menuData])
 
   const itemMap = useMemo(() => {
     const m = {}
