@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Clock, Scale, Mail } from 'lucide-react'
+import DatePicker from '@/components/DatePicker'
 
 const BRANCHES = [
   'Taman Putra Perdana',
@@ -58,6 +59,7 @@ export default function ReservationsPage() {
   const [orderItems, setOrderItems] = useState({})
   const [specialNote, setSpecialNote] = useState('')
   const [menu, setMenu]         = useState(MENU_FALLBACK)
+  const [availableSlots, setAvailableSlots] = useState(TIME_SLOTS)
   const [loading, setLoading]   = useState(false)
   const [success, setSuccess]   = useState(false)
   const [error, setError]       = useState('')
@@ -72,7 +74,19 @@ export default function ReservationsPage() {
 
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
-  const minDateStr = minDate.toISOString().split('T')[0]
+
+  // Load admin-configured available time slots
+  useEffect(() => {
+    fetch('/api/content')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const entry = data?.content?.find(c => c.page === 'reservations' && c.key === 'available_times')
+        if (entry?.value) {
+          try { setAvailableSlots(JSON.parse(entry.value)) } catch {}
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/menu')
@@ -488,16 +502,36 @@ export default function ReservationsPage() {
               <span className="w-6 h-6 rounded-full bg-charcoal text-cream text-xs flex items-center justify-center font-semibold shrink-0">2</span>
               <h2 className="font-fraunces font-semibold text-xl text-charcoal">Butiran Tempahan</h2>
             </div>
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <Field label="Tarikh Ambil" required hint="Minimum 3 hari dari sekarang.">
-                <input name="date" type="date" required min={minDateStr} value={form.date} onChange={set}
-                  className={inputCls} />
+            <div className="mb-4">
+              <Field label="Tarikh Ambil" required hint="Tarikh sebelum 3 hari dari sekarang tidak tersedia.">
+                <DatePicker
+                  value={form.date}
+                  onChange={d => { setForm(p => ({ ...p, date: d })); setError('') }}
+                  minDate={minDate}
+                />
               </Field>
+            </div>
+            <div className="mb-4">
               <Field label="Masa Ambil" required>
-                <select name="time" required value={form.time} onChange={set} className={inputCls}>
-                  <option value="">-- Pilih masa --</option>
-                  {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                {availableSlots.length === 0 ? (
+                  <p className="text-sm text-muted py-2">Tiada masa tersedia. Sila hubungi kami terus.</p>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {availableSlots.map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => { setForm(p => ({ ...p, time: t })); setError('') }}
+                        className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all duration-100 text-center
+                          ${form.time === t
+                            ? 'bg-forest text-cream border-forest shadow-sm scale-[1.03]'
+                            : 'bg-white text-charcoal border-brown/15 hover:border-forest/40 hover:bg-forest/5 active:scale-[0.97]'
+                          }`}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </Field>
             </div>
             <Field label="Cawangan Ambil" required>
