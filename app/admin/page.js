@@ -1102,10 +1102,27 @@ function ContentTab({ pw }) {
   const [saving, setSaving]   = useState(false)
   const [group, setGroup]     = useState('home')
 
+  // Footer-specific state
+  const [fBranches,  setFBranches]  = useState(['Taman Putra Perdana','Cyberjaya','Kota Warisan'])
+  const [fNavLinks,  setFNavLinks]  = useState([
+    { href:'/menu', label:'Menu Kuih' },{ href:'/reservations', label:'Buat Tempahan' },
+    { href:'/contact', label:'Hubungi Kami' },{ href:'/admin', label:'Admin' },
+  ])
+  const [fHoursDays, setFHoursDays] = useState('Isnin – Ahad')
+  const [fHoursTime, setFHoursTime] = useState('7:00 pagi – 11:00 malam')
+  const [fSaving,    setFSaving]    = useState({})
+  const [fSaved,     setFSaved]     = useState({})
+
   useEffect(() => {
     fetch('/api/content').then(r => r.json()).then(d => {
       const db = d.content || []
       setContent(DEFAULTS.map(def => { const found = db.find(c => c.page === def.page && c.key === def.key); return found ? { ...def, value: found.value } : def }))
+      // Load footer data
+      const get = key => db.find(c => c.page === 'footer' && c.key === key)?.value
+      try { const v = get('branches');  if (v) setFBranches(JSON.parse(v)) } catch {}
+      try { const v = get('nav_links'); if (v) setFNavLinks(JSON.parse(v))  } catch {}
+      if (get('hours_days')) setFHoursDays(get('hours_days'))
+      if (get('hours_time')) setFHoursTime(get('hours_time'))
       setLoading(false)
     })
   }, [])
@@ -1117,20 +1134,135 @@ function ContentTab({ pw }) {
     setEditKey(null); setSaving(false)
   }
 
+  async function saveFooter(key, value) {
+    setFSaving(p => ({ ...p, [key]: true }))
+    try {
+      await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page: 'footer', key, value }) })
+      setFSaved(p => ({ ...p, [key]: true }))
+      setTimeout(() => setFSaved(p => ({ ...p, [key]: false })), 2500)
+    } catch {}
+    setFSaving(p => ({ ...p, [key]: false }))
+  }
+
   const shown = content.filter(c => c.page === group)
+
+  const inputCls = 'border border-brown/20 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest/30 bg-white'
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        {['home','menu','contact'].map(g => (
+      <div className="flex gap-2 flex-wrap">
+        {['home','menu','contact','footer'].map(g => (
           <button key={g} onClick={() => setGroup(g)}
             className={`px-5 py-2 rounded-xl text-sm font-semibold capitalize transition-colors ${group === g ? 'bg-charcoal text-cream' : 'bg-white text-muted border border-brown/20 hover:border-brown/40'}`}>
-            {g}
+            {g === 'footer' ? '🦶 Footer' : g}
           </button>
         ))}
       </div>
 
-      {loading ? <Spinner /> : (
+      {loading ? <Spinner /> : group === 'footer' ? (
+        <div className="space-y-5">
+
+          {/* ── NAVIGASI ── */}
+          <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
+            <div className="px-5 py-4 border-b border-brown/6 flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-charcoal text-sm">Navigasi</div>
+                <div className="text-muted text-xs mt-0.5">Pautan yang terpapar di footer</div>
+              </div>
+              {fSaved.nav_links && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
+            </div>
+            <div className="p-4 space-y-2">
+              {fNavLinks.map((link, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input value={link.label} onChange={e => setFNavLinks(p => p.map((l,j) => j===i ? {...l,label:e.target.value} : l))}
+                    placeholder="Label" className={`${inputCls} flex-1`} />
+                  <input value={link.href} onChange={e => setFNavLinks(p => p.map((l,j) => j===i ? {...l,href:e.target.value} : l))}
+                    placeholder="/pautan" className={`${inputCls} w-36`} />
+                  <button onClick={() => setFNavLinks(p => p.filter((_,j) => j!==i))}
+                    className="text-red-400 hover:text-red-600 text-xs px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors shrink-0">
+                    Padam
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 pt-1">
+                <button onClick={() => setFNavLinks(p => [...p, {href:'', label:''}])}
+                  className="text-forest text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-forest/8 transition-colors border border-forest/20">
+                  + Tambah Pautan
+                </button>
+                <button onClick={() => saveFooter('nav_links', JSON.stringify(fNavLinks))} disabled={fSaving.nav_links}
+                  className="bg-charcoal text-cream px-5 py-1.5 rounded-xl text-sm font-semibold hover:bg-forest transition-colors disabled:opacity-50 ml-auto flex items-center gap-2">
+                  {fSaving.nav_links && <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin"/>}
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CAWANGAN ── */}
+          <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
+            <div className="px-5 py-4 border-b border-brown/6 flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-charcoal text-sm">Cawangan</div>
+                <div className="text-muted text-xs mt-0.5">Senarai cawangan di footer</div>
+              </div>
+              {fSaved.branches && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
+            </div>
+            <div className="p-4 space-y-2">
+              {fBranches.map((branch, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input value={branch} onChange={e => setFBranches(p => p.map((b,j) => j===i ? e.target.value : b))}
+                    placeholder="Nama cawangan" className={`${inputCls} flex-1`} />
+                  <button onClick={() => setFBranches(p => p.filter((_,j) => j!==i))}
+                    className="text-red-400 hover:text-red-600 text-xs px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors shrink-0">
+                    Padam
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 pt-1">
+                <button onClick={() => setFBranches(p => [...p, ''])}
+                  className="text-forest text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-forest/8 transition-colors border border-forest/20">
+                  + Tambah Cawangan
+                </button>
+                <button onClick={() => saveFooter('branches', JSON.stringify(fBranches))} disabled={fSaving.branches}
+                  className="bg-charcoal text-cream px-5 py-1.5 rounded-xl text-sm font-semibold hover:bg-forest transition-colors disabled:opacity-50 ml-auto flex items-center gap-2">
+                  {fSaving.branches && <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin"/>}
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── WAKTU OPERASI ── */}
+          <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
+            <div className="px-5 py-4 border-b border-brown/6 flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-charcoal text-sm">Waktu Operasi</div>
+                <div className="text-muted text-xs mt-0.5">Hari dan masa operasi</div>
+              </div>
+              {(fSaved.hours_days || fSaved.hours_time) && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-muted uppercase tracking-wide block mb-1.5">Hari</label>
+                <input value={fHoursDays} onChange={e => setFHoursDays(e.target.value)}
+                  placeholder="cth: Isnin – Ahad" className={`${inputCls} w-full`} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted uppercase tracking-wide block mb-1.5">Masa</label>
+                <input value={fHoursTime} onChange={e => setFHoursTime(e.target.value)}
+                  placeholder="cth: 7:00 pagi – 11:00 malam" className={`${inputCls} w-full`} />
+              </div>
+              <button onClick={async () => { await saveFooter('hours_days', fHoursDays); await saveFooter('hours_time', fHoursTime) }}
+                disabled={fSaving.hours_days || fSaving.hours_time}
+                className="bg-charcoal text-cream px-5 py-2 rounded-xl text-sm font-semibold hover:bg-forest transition-colors disabled:opacity-50 flex items-center gap-2 ml-auto">
+                {(fSaving.hours_days || fSaving.hours_time) && <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin"/>}
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+
+      ) : (
         <div className="bg-white rounded-2xl border border-brown/8 divide-y divide-brown/5 overflow-hidden">
           {shown.map(item => {
             const uid = `${item.page}.${item.key}`

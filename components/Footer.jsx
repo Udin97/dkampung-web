@@ -1,19 +1,46 @@
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 
-const LINKS = [
+export const revalidate = 0
+
+const DEFAULT_NAV = [
   { href: '/menu',         label: 'Menu Kuih' },
   { href: '/reservations', label: 'Buat Tempahan' },
   { href: '/contact',      label: 'Hubungi Kami' },
   { href: '/admin',        label: 'Admin' },
 ]
+const DEFAULT_BRANCHES  = ['Taman Putra Perdana', 'Cyberjaya', 'Kota Warisan']
+const DEFAULT_HOURS_DAYS = 'Isnin – Ahad'
+const DEFAULT_HOURS_TIME = '7:00 pagi – 11:00 malam'
 
-const BRANCHES = [
-  'Taman Putra Perdana',
-  'Cyberjaya',
-  'Kota Warisan',
-]
+function parse(data, key, fallback) {
+  const entry = data?.find(d => d.key === key)
+  if (!entry?.value) return fallback
+  try { return JSON.parse(entry.value) } catch { return entry.value }
+}
 
-export default function Footer() {
+export default async function Footer() {
+  let navLinks  = DEFAULT_NAV
+  let branches  = DEFAULT_BRANCHES
+  let hoursDays = DEFAULT_HOURS_DAYS
+  let hoursTime = DEFAULT_HOURS_TIME
+
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+    const { data } = await supabase
+      .from('page_content').select('key,value').eq('page', 'footer')
+
+    if (data?.length) {
+      navLinks  = parse(data, 'nav_links',  DEFAULT_NAV)
+      branches  = parse(data, 'branches',   DEFAULT_BRANCHES)
+      hoursDays = parse(data, 'hours_days', DEFAULT_HOURS_DAYS)
+      hoursTime = parse(data, 'hours_time', DEFAULT_HOURS_TIME)
+    }
+  } catch {}
+
   return (
     <footer className="bg-charcoal text-cream">
       <div className="max-w-6xl mx-auto px-6 pt-16 pb-10">
@@ -44,7 +71,7 @@ export default function Footer() {
           <div>
             <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-5">Navigasi</div>
             <nav className="flex flex-col gap-3">
-              {LINKS.map(l => (
+              {navLinks.map(l => (
                 <Link key={l.href} href={l.href}
                   className="text-sm text-cream/40 hover:text-cream transition-colors w-fit">
                   {l.label}
@@ -57,8 +84,8 @@ export default function Footer() {
           <div>
             <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-5">Cawangan</div>
             <div className="flex flex-col gap-3">
-              {BRANCHES.map(b => (
-                <span key={b} className="text-sm text-cream/40">{b}</span>
+              {branches.map((b, i) => (
+                <span key={i} className="text-sm text-cream/40">{b}</span>
               ))}
             </div>
           </div>
@@ -67,8 +94,8 @@ export default function Footer() {
           <div>
             <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-5">Operasi</div>
             <div className="text-sm text-cream/40 leading-relaxed">
-              <p>Isnin – Ahad</p>
-              <p className="text-cream/70 font-semibold mt-1">7:00 pagi – 11:00 malam</p>
+              <p>{hoursDays}</p>
+              <p className="text-cream/70 font-semibold mt-1">{hoursTime}</p>
             </div>
           </div>
         </div>
