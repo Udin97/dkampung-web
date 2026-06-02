@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdmin } from '@/lib/session'
 
 const supabaseRead = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -14,11 +15,6 @@ function admin() {
   )
 }
 
-function auth(request) {
-  const h = request.headers.get('Authorization') || ''
-  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
-}
-
 export async function GET(request, { params }) {
   const { data, error } = await supabaseRead.from('menu_items').select('*').eq('id', params.id).single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -26,7 +22,7 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = admin()
   if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
@@ -44,7 +40,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = admin()
   if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })

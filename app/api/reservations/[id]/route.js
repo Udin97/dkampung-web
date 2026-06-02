@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdmin } from '@/lib/session'
 
 function admin() {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null
@@ -9,13 +10,8 @@ function admin() {
   )
 }
 
-function auth(request) {
-  const h = request.headers.get('Authorization') || ''
-  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
-}
-
 export async function PATCH(request, { params }) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = admin()
   if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })
@@ -33,7 +29,7 @@ export async function PATCH(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = admin()
   if (!supabase) return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })

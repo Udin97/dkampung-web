@@ -2,13 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { emailHtml } from '@/lib/receipt'
+import { isAdmin } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
-
-function auth(request) {
-  const h = request.headers.get('Authorization') || ''
-  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
-}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,7 +14,7 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request, { params }) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data: reservation, error } = await supabase
     .from('reservations')

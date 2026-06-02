@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdmin } from '@/lib/session'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-
-function auth(request) {
-  const h = request.headers.get('Authorization') || ''
-  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
-}
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  if (!auth(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured' }, { status: 500 })

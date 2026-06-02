@@ -181,7 +181,7 @@ function LoginScreen({ onLogin }) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pw }),
     })
-    if (res.ok) { sessionStorage.setItem('adminPw', pw); onLogin(pw) }
+    if (res.ok) { onLogin() }
     else setErr('Kata laluan tidak betul. Sila cuba lagi.')
     setBusy(false)
   }
@@ -353,19 +353,19 @@ const TABS = [
 ]
 
 // ── Overview ──────────────────────────────────────────────────────────────────
-function OverviewTab({ pw, onRefresh }) {
+function OverviewTab({ onRefresh }) {
   const [d, setD] = useState(null)
 
   useEffect(() => {
     setD(null)
     Promise.all([
       fetch('/api/reservations', { cache: 'no-store' }).then(r => r.json()),
-      fetch('/api/analytics/stats', { cache: 'no-store', headers: { Authorization: `Bearer ${pw}` } }).then(r => r.json()),
+      fetch('/api/analytics/stats', { cache: 'no-store' }).then(r => r.json()),
       fetch('/api/menu', { cache: 'no-store' }).then(r => r.json()),
     ]).then(([res, stats, menu]) =>
       setD({ reservations: res.reservations || [], visits: stats.visits || [], menuItems: menu.items || [] })
     )
-  }, [pw])
+  }, [])
 
   if (!d) return <Spinner />
 
@@ -524,7 +524,7 @@ function OverviewTab({ pw, onRefresh }) {
 }
 
 // ── Reservations ──────────────────────────────────────────────────────────────
-function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
+function ReservationsTab({ onStatusChange, addToast, askConfirm }) {
   const ALL_TIME_SLOTS = [
     '7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM',
     '12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM',
@@ -572,7 +572,7 @@ function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
     setRows(p => p.map(r => r.id === id ? { ...r, status } : r))
     if (detail?.id === id) setDetail(p => ({ ...p, status }))
     try {
-      const res = await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ status }) })
+      const res = await fetch(`/api/reservations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error || `HTTP ${res.status}`)
@@ -590,7 +590,7 @@ function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
   function del(id) {
     askConfirm('Padam tempahan ini? Tindakan ini tidak boleh dibatalkan.', async () => {
       try {
-        const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+        const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE' })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
           throw new Error(body.error || `HTTP ${res.status}`)
@@ -609,10 +609,7 @@ function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
     setSendingReceipt(true)
     setReceiptSent(false)
     try {
-      const res = await fetch(`/api/reservations/${id}/send-receipt`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${pw}` },
-      })
+      const res = await fetch(`/api/reservations/${id}/send-receipt`, { method: 'POST' })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error || `HTTP ${res.status}`)
@@ -632,7 +629,7 @@ function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
     try {
       const res = await fetch('/api/content', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ page: 'reservations', key: 'available_times', value: JSON.stringify([...enabledSlots]) }),
       })
       if (!res.ok) throw new Error('Gagal simpan')
@@ -868,7 +865,7 @@ const CATS = [
 ]
 const BLANK = { category_id: 'apam', name: '', description: '', price: '', min_order: 50, image_url: '', is_available: true }
 
-function MenuForm({ data, onChange, onSave, onCancel, saving, pw }) {
+function MenuForm({ data, onChange, onSave, onCancel, saving }) {
   const inp = 'w-full border border-brown/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30'
   const [uploading, setUploading] = useState(false)
   const [upErr, setUpErr]         = useState('')
@@ -882,11 +879,7 @@ function MenuForm({ data, onChange, onSave, onCancel, saving, pw }) {
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const res  = await fetch('/api/menu/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${pw}` },
-        body: fd,
-      })
+      const res  = await fetch('/api/menu/upload', { method: 'POST', body: fd })
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Muat naik gagal')
       onChange('image_url', body.url)
@@ -976,7 +969,7 @@ function MenuForm({ data, onChange, onSave, onCancel, saving, pw }) {
   )
 }
 
-function MenuTab({ pw, addToast, askConfirm }) {
+function MenuTab({ addToast, askConfirm }) {
   const [items, setItems]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [modal, setModal]       = useState(null)   // null | 'add' | 'edit'
@@ -1000,12 +993,12 @@ function MenuTab({ pw, addToast, askConfirm }) {
       let res, data
       if (modal === 'add') {
         const cat = CATS.find(c => c.id === formData.category_id) || CATS[0]
-        res  = await fetch('/api/menu', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ ...formData, category_name: cat.name, category_emoji: cat.emoji }) })
+        res  = await fetch('/api/menu', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...formData, category_name: cat.name, category_emoji: cat.emoji }) })
         data = await res.json()
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
         setItems(p => [...p, data.item])
       } else {
-        res  = await fetch(`/api/menu/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify(formData) })
+        res  = await fetch(`/api/menu/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
         data = await res.json()
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
         setItems(p => p.map(i => i.id === editId ? data.item : i))
@@ -1022,7 +1015,7 @@ function MenuTab({ pw, addToast, askConfirm }) {
   function del(id) {
     askConfirm('Padam item menu ini? Tindakan ini tidak boleh dibatalkan.', async () => {
       try {
-        const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+        const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' })
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
           throw new Error(body.error || `HTTP ${res.status}`)
@@ -1040,7 +1033,7 @@ function MenuTab({ pw, addToast, askConfirm }) {
   return (
     <div className="space-y-5">
       <Modal open={!!modal} onClose={closeModal} title={modal === 'add' ? 'Tambah Item Baharu' : 'Edit Item Menu'}>
-        <MenuForm data={formData} onChange={change} onSave={saveItem} onCancel={closeModal} saving={saving} pw={pw} />
+        <MenuForm data={formData} onChange={change} onSave={saveItem} onCancel={closeModal} saving={saving} />
       </Modal>
 
       <div className="flex items-center justify-between">
@@ -1125,7 +1118,7 @@ function normalizeBranch(b) {
   return { name: b.name||'', address: b.address||'', phone: b.phone||'', hours: b.hours||'', mapQuery: b.mapQuery||b.name||'' }
 }
 
-function ContentTab({ pw, addToast, askConfirm }) {
+function ContentTab({ addToast, askConfirm }) {
   const [content, setContent] = useState([])
   const [loading, setLoading] = useState(true)
   const [editKey, setEditKey] = useState(null)
@@ -1166,7 +1159,7 @@ function ContentTab({ pw, addToast, askConfirm }) {
   async function save(page, key) {
     setSaving(true)
     try {
-      await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page, key, value: editVal }) })
+      await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page, key, value: editVal }) })
       setContent(p => p.map(c => c.page === page && c.key === key ? { ...c, value: editVal } : c))
       setEditKey(null)
       addToast('Berjaya disimpan')
@@ -1179,7 +1172,7 @@ function ContentTab({ pw, addToast, askConfirm }) {
   async function saveFooter(key, value) {
     setFSaving(p => ({ ...p, [key]: true }))
     try {
-      const res = await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page: 'footer', key, value }) })
+      const res = await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: 'footer', key, value }) })
       if (!res.ok) throw new Error('Gagal menyimpan')
       addToast('Berjaya disimpan')
     } catch (err) {
@@ -1415,14 +1408,14 @@ function ContentTab({ pw, addToast, askConfirm }) {
 }
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
-function AnalyticsTab({ pw }) {
+function AnalyticsTab() {
   const [visits, setVisits]   = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/analytics/stats', { headers: { Authorization: `Bearer ${pw}` } })
+    fetch('/api/analytics/stats')
       .then(r => r.json()).then(d => { setVisits(d.visits || []); setLoading(false) })
-  }, [pw])
+  }, [])
 
   if (loading) return <Spinner />
 
@@ -1516,7 +1509,7 @@ function AnalyticsTab({ pw }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [pw, setPw]   = useState(null)
+  const [authed, setAuthed] = useState(false)
   const [tab, setTab] = useState('overview')
   const [tick, setTick] = useState(0)
   const [now, setNow] = useState(new Date())
@@ -1535,10 +1528,9 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => {
-    const saved = sessionStorage.getItem('adminPw')
-    if (!saved) return
-    fetch('/api/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: saved }) })
-      .then(r => { if (r.ok) setPw(saved) })
+    fetch('/api/admin/session')
+      .then(r => { if (r.ok) setAuthed(true) })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -1546,7 +1538,7 @@ export default function AdminPage() {
     return () => clearInterval(id)
   }, [])
 
-  if (!pw) return <LoginScreen onLogin={setPw} />
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />
 
   const activeTab = TABS.find(t => t.id === tab)
 
@@ -1602,7 +1594,7 @@ export default function AdminPage() {
 
         {/* Logout */}
         <div className="px-2 pb-4 border-t border-white/8 pt-3">
-          <button onClick={() => { sessionStorage.removeItem('adminPw'); setPw(null) }}
+          <button onClick={async () => { await fetch('/api/admin/auth', { method: 'DELETE' }); setAuthed(false) }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-cream/30 hover:text-cream/60 hover:bg-white/5 transition-all text-sm">
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -1666,11 +1658,11 @@ export default function AdminPage() {
 
         {/* Content */}
         <div className="p-6">
-          {tab === 'overview'     && <OverviewTab     key={tick} pw={pw} onRefresh={bump} />}
-          {tab === 'reservations' && <ReservationsTab pw={pw} onStatusChange={bump} addToast={addToast} askConfirm={askConfirm} />}
-          {tab === 'menu'         && <MenuTab         pw={pw} addToast={addToast} askConfirm={askConfirm} />}
-          {tab === 'content'      && <ContentTab      pw={pw} addToast={addToast} askConfirm={askConfirm} />}
-          {tab === 'analytics'    && <AnalyticsTab    pw={pw} />}
+          {tab === 'overview'     && <OverviewTab     key={tick} onRefresh={bump} />}
+          {tab === 'reservations' && <ReservationsTab onStatusChange={bump} addToast={addToast} askConfirm={askConfirm} />}
+          {tab === 'menu'         && <MenuTab         addToast={addToast} askConfirm={askConfirm} />}
+          {tab === 'content'      && <ContentTab      addToast={addToast} askConfirm={askConfirm} />}
+          {tab === 'analytics'    && <AnalyticsTab    />}
         </div>
       </div>
     </div>

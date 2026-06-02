@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdmin } from '@/lib/session'
 
 const BUCKET    = 'menu-images'
 const MAX_BYTES = 2 * 1024 * 1024
 const ALLOWED   = ['image/jpeg', 'image/png', 'image/webp']
 const EXT       = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
-
-function auth(request) {
-  const h = request.headers.get('Authorization') || ''
-  return h.replace('Bearer ', '') === process.env.ADMIN_PASSWORD
-}
 
 function slug(s) {
   return (s || 'image')
@@ -21,7 +17,7 @@ function slug(s) {
 }
 
 export async function POST(request) {
-  if (!auth(request)) {
+  if (!await isAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
