@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { Clock, Scale, Mail } from 'lucide-react'
 
 const BRANCHES = [
   'Taman Putra Perdana',
@@ -16,23 +17,23 @@ const TIME_SLOTS = [
 
 const MENU_FALLBACK = [
   { id: 'apam', category: 'Kuih Kukus', emoji: '🫓', items: [
-    { name: 'Apam Putih',  price: 1.50, min: 50 },
-    { name: 'Apam Pandan', price: 1.50, min: 50 },
-    { name: 'Apam Keladi', price: 1.60, min: 50 },
+    { name: 'Apam Putih',  price: 1.50 },
+    { name: 'Apam Pandan', price: 1.50 },
+    { name: 'Apam Keladi', price: 1.60 },
   ]},
   { id: 'kaswi', category: 'Kaswi', emoji: '🍮', items: [
-    { name: 'Kaswi Jagung', price: 1.80, min: 50 },
-    { name: 'Kaswi Pandan', price: 1.80, min: 50 },
-    { name: 'Kaswi Coklat', price: 1.80, min: 50 },
-    { name: 'Kaswi Ubi',    price: 1.80, min: 50 },
+    { name: 'Kaswi Jagung', price: 1.80 },
+    { name: 'Kaswi Pandan', price: 1.80 },
+    { name: 'Kaswi Coklat', price: 1.80 },
+    { name: 'Kaswi Ubi',    price: 1.80 },
   ]},
   { id: 'santan', category: 'Kuih Santan', emoji: '🥥', items: [
-    { name: 'Tepung Pelita',  price: 2.00, min: 50 },
-    { name: 'Kuih Talam',     price: 2.00, min: 50 },
-    { name: 'Serimuka Pulut', price: 2.50, min: 50 },
+    { name: 'Tepung Pelita',  price: 2.00 },
+    { name: 'Kuih Talam',     price: 2.00 },
+    { name: 'Serimuka Pulut', price: 2.50 },
   ]},
   { id: 'nasi', category: 'Nasi & Hidangan', emoji: '🍚', items: [
-    { name: 'Nasi Lemak Che Dil', price: 5.00, min: 1 },
+    { name: 'Nasi Lemak Che Dil', price: 5.00 },
   ]},
 ]
 
@@ -92,7 +93,6 @@ export default function ReservationsPage() {
           map[catId].items.push({
             name:  item.name,
             price: parseFloat(item.price),
-            min:   item.min_order || 50,
           })
         })
         const groups = Object.values(map)
@@ -110,20 +110,13 @@ export default function ReservationsPage() {
   const totalQty   = Object.values(orderItems).reduce((s, q) => s + q, 0)
   const totalPrice = Object.entries(orderItems).reduce((s, [name, q]) => s + q * (itemMap[name]?.price || 0), 0)
 
-  const increment = (name, min) => {
-    setOrderItems(p => {
-      const cur  = p[name] || 0
-      const step = min >= 50 ? 10 : 1
-      return { ...p, [name]: cur === 0 ? step : cur + step }
-    })
+  const increment = name => {
+    setOrderItems(p => ({ ...p, [name]: (p[name] || 0) + 1 }))
   }
 
-  const decrement = (name, min) => {
+  const decrement = name => {
     setOrderItems(p => {
-      const cur = p[name] || 0
-      if (cur === 0) return p
-      const step = min >= 50 ? 10 : 1
-      const next = cur - step
+      const next = (p[name] || 0) - 1
       if (next <= 0) {
         const updated = { ...p }
         delete updated[name]
@@ -150,7 +143,7 @@ export default function ReservationsPage() {
     }
 
     if (totalQty < 50) {
-      setError('Jumlah minimum tempahan ialah 50 biji.')
+      setError('Jumlah minimum tempahan ialah 50 pax.')
       return
     }
 
@@ -160,9 +153,9 @@ export default function ReservationsPage() {
   const handleConfirm = async () => {
     setError('')
     const orderLines = Object.entries(orderItems)
-      .map(([name, qty]) => `• ${name} × ${qty} biji — RM ${(qty * (itemMap[name]?.price || 0)).toFixed(2)}`)
+      .map(([name, qty]) => `• ${name} × ${qty} pax — RM ${(qty * (itemMap[name]?.price || 0)).toFixed(2)}`)
       .join('\n')
-    const notes = `PESANAN:\n${orderLines}\nJumlah: ${totalQty} biji | Anggaran: RM ${totalPrice.toFixed(2)}${specialNote ? `\nNota: ${specialNote}` : ''}`
+    const notes = `PESANAN:\n${orderLines}\nJumlah: ${totalQty} pax | Anggaran: RM ${totalPrice.toFixed(2)}${specialNote ? `\nNota: ${specialNote}` : ''}`
 
     setLoading(true)
     try {
@@ -305,7 +298,7 @@ export default function ReservationsPage() {
                   <section>
                     <div className="text-[0.6rem] font-semibold tracking-[2.5px] uppercase text-muted mb-2.5 flex items-center justify-between">
                       <span>Senarai Kuih</span>
-                      <span className="text-charcoal/60">{totalQty} biji</span>
+                      <span className="text-charcoal/60">{totalQty} pax</span>
                     </div>
                     <div className="bg-stone/60 rounded-xl divide-y divide-brown/8">
                       {Object.entries(orderItems).map(([name, qty]) => {
@@ -410,17 +403,17 @@ export default function ReservationsPage() {
             <div className="space-y-5 mb-10">
               {[
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+                  icon: <Clock className="w-5 h-5 text-gold shrink-0 mt-0.5" strokeWidth={2} />,
                   title: 'Tempah 3 Hari Awal',
                   desc: 'Untuk pastikan kuih tersedia segar.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
-                  title: 'Minimum 50 Biji',
-                  desc: 'Jumlah keseluruhan minimum 50 biji.',
+                  icon: <Scale className="w-5 h-5 text-gold shrink-0 mt-0.5" strokeWidth={2} />,
+                  title: 'Minimum 50 Pax',
+                  desc: 'Jumlah keseluruhan minimum 50 pax.',
                 },
                 {
-                  icon: <svg className="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>,
+                  icon: <Mail className="w-5 h-5 text-gold shrink-0 mt-0.5" strokeWidth={2} />,
                   title: 'Pengesahan Email',
                   desc: 'Resit tempahan dihantar ke emel anda.',
                 },
@@ -439,7 +432,7 @@ export default function ReservationsPage() {
             {totalQty > 0 && (
               <div className="bg-white/8 rounded-2xl px-5 py-4 mb-6 border border-white/15">
                 <div className="text-[0.6rem] font-semibold tracking-[3px] uppercase text-gold mb-2">Ringkasan</div>
-                <div className="text-cream font-semibold">{totalQty} biji</div>
+                <div className="text-cream font-semibold">{totalQty} pax</div>
                 <div className="text-gold font-bold text-2xl font-fraunces">RM {totalPrice.toFixed(2)}</div>
               </div>
             )}
@@ -540,12 +533,12 @@ export default function ReservationsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-charcoal">{item.name}</div>
                             <div className="text-xs text-muted mt-0.5">
-                              RM {parseFloat(item.price).toFixed(2)} / biji
+                              RM {parseFloat(item.price).toFixed(2)} / pax
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <button type="button"
-                              onClick={() => decrement(item.name, item.min)}
+                              onClick={() => decrement(item.name)}
                               disabled={qty === 0}
                               className="w-7 h-7 rounded-full border border-brown/20 flex items-center justify-center
                                 text-charcoal hover:bg-stone disabled:opacity-25 transition-all duration-100 active:scale-[0.88] font-bold text-sm">
@@ -555,7 +548,7 @@ export default function ReservationsPage() {
                               {qty}
                             </span>
                             <button type="button"
-                              onClick={() => increment(item.name, item.min)}
+                              onClick={() => increment(item.name)}
                               className="w-7 h-7 rounded-full bg-charcoal text-cream flex items-center justify-center
                                 hover:bg-forest transition-all duration-100 active:scale-[0.88] font-bold text-sm">
                               +
@@ -581,7 +574,7 @@ export default function ReservationsPage() {
               <div className="mt-5 bg-charcoal rounded-2xl px-5 py-4 flex items-center justify-between">
                 <div>
                   <div className="text-cream/50 text-xs">Jumlah Pesanan</div>
-                  <div className="text-cream font-semibold text-sm">{totalQty} biji</div>
+                  <div className="text-cream font-semibold text-sm">{totalQty} pax</div>
                 </div>
                 <div className="text-right">
                   <div className="text-cream/50 text-xs">Anggaran Harga</div>
@@ -596,7 +589,7 @@ export default function ReservationsPage() {
                 Nota Khas <span className="text-muted font-normal text-xs">(pilihan)</span>
               </label>
               <textarea rows={2} value={specialNote} onChange={e => setSpecialNote(e.target.value)}
-                placeholder="Contoh: Campuran pandan dan coklat (25 biji setiap satu)..."
+                placeholder="Contoh: Campuran pandan dan coklat (25 pax setiap satu)..."
                 className={`${inputCls} resize-none`} />
             </div>
           </div>

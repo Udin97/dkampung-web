@@ -87,7 +87,7 @@ function MenuCard({ item, emoji }) {
       <div className="flex items-center justify-between pt-2.5 border-t border-brown/8">
         <span className="text-terra font-bold text-sm">
           RM {parseFloat(item.price).toFixed(2)}
-          <span className="text-muted font-normal text-xs ml-1">/ biji</span>
+          <span className="text-muted font-normal text-xs ml-1">/ pax</span>
         </span>
         {item.min > 1 && (
           <span className="text-[0.58rem] font-semibold uppercase tracking-wide
@@ -154,7 +154,7 @@ export default async function MenuPage() {
           <p className="text-cream/90 max-w-sm mx-auto text-[0.9rem] leading-relaxed"
             style={{ textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
             Semua kuih dibuat segar setiap hari menggunakan bahan-bahan semula jadi pilihan.
-            Tempahan minimum 50 biji jumlah.
+            Tempahan minimum 50 pax jumlah.
           </p>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@supabase/supabase-js'
+import { Leaf, Sun, Users, ShieldCheck } from 'lucide-react'
+import ScrollReveal from '@/components/ScrollReveal'
 
 export const revalidate = 0
 
@@ -46,38 +48,22 @@ async function getFeatured() {
 
 const FEATURES = [
   {
-    icon: (
-      <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>
-    ),
+    icon: <Leaf className="w-7 h-7 text-forest" strokeWidth={1.8} />,
     title: 'Bahan Semula Jadi',
     desc: 'Tiada pewarna atau perisa tiruan. Semua dari alam.',
   },
   {
-    icon: (
-      <svg className="w-7 h-7 text-gold" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
+    icon: <Sun className="w-7 h-7 text-gold" strokeWidth={1.8} />,
     title: 'Segar Setiap Pagi',
     desc: 'Dibuat pada hari yang sama, dinikmati hari yang sama.',
   },
   {
-    icon: (
-      <svg className="w-7 h-7 text-terra" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
+    icon: <Users className="w-7 h-7 text-terra" strokeWidth={1.8} />,
     title: 'Untuk Majlis',
-    desc: 'Minimum 50 biji, sempurna untuk kenduri dan majlis.',
+    desc: 'Minimum 50 pax, sempurna untuk kenduri dan majlis.',
   },
   {
-    icon: (
-      <svg className="w-7 h-7 text-forest" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
+    icon: <ShieldCheck className="w-7 h-7 text-forest" strokeWidth={1.8} />,
     title: 'Halal & Bersih',
     desc: 'Dapur bertauliah, proses higienik sepenuhnya.',
   },
@@ -212,7 +198,7 @@ export default async function HomePage() {
                 ))}
               </div>
               <div className="px-5 py-3 bg-charcoal/40 border-t border-white/10">
-                <p className="text-cream/75 text-[0.67rem]">Min. 50 biji · Segar setiap hari</p>
+                <p className="text-cream/75 text-[0.67rem]">Min. 50 pax · Segar setiap hari</p>
               </div>
             </div>
           </div>
@@ -239,22 +225,23 @@ export default async function HomePage() {
       {/* ══════════ FEATURES ══════════════════════════════════════ */}
       <section className="py-24 bg-stone">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <ScrollReveal className="text-center mb-14">
             <div className="text-[0.62rem] font-semibold tracking-[4px] uppercase text-gold mb-3">Kelebihan Kami</div>
             <h2 className="font-fraunces font-black text-4xl text-charcoal">Kenapa DKAMPUNG?</h2>
-          </div>
+          </ScrollReveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {FEATURES.map(f => (
-              <div key={f.title}
-                className="group bg-white rounded-2xl p-6 border border-brown/6
+            {FEATURES.map((f, i) => (
+              <ScrollReveal key={f.title} delay={i * 100}>
+                <div className="group bg-white rounded-2xl p-6 border border-brown/6 h-full
                   hover:border-forest/18 hover:shadow-[0_8px_32px_rgba(27,67,50,0.07)]
                   transition-all duration-200 active:scale-[0.97] cursor-default">
-                <div className="mb-4">{f.icon}</div>
-                <div className="font-semibold text-charcoal text-[0.88rem] mb-1.5 group-hover:text-forest transition-colors">
-                  {f.title}
+                  <div className="mb-4">{f.icon}</div>
+                  <div className="font-semibold text-charcoal text-[0.88rem] mb-1.5 group-hover:text-forest transition-colors">
+                    {f.title}
+                  </div>
+                  <div className="text-muted text-xs leading-relaxed">{f.desc}</div>
                 </div>
-                <div className="text-muted text-xs leading-relaxed">{f.desc}</div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -265,6 +252,7 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
 
           {/* Left — copy */}
+          <ScrollReveal>
           <div>
             <div className="text-[0.62rem] font-semibold tracking-[4px] uppercase text-terra mb-5">Cerita Kami</div>
             <h2 className="font-fraunces font-black leading-[0.92] mb-6"
@@ -279,7 +267,7 @@ export default async function HomePage() {
             </p>
             <p className="text-muted leading-[1.9] mb-10 text-[0.92rem]">
               Kini kami beroperasi di 3 cawangan, melayani tempahan kenduri dan majlis
-              dari 50 hingga 200 biji dengan penghantaran segar setiap hari.
+              dari 50 hingga 200 pax dengan penghantaran segar setiap hari.
             </p>
             <Link href="/contact"
               className="inline-flex items-center gap-2 bg-charcoal text-cream px-6 py-3
@@ -287,8 +275,10 @@ export default async function HomePage() {
               Hubungi Kami →
             </Link>
           </div>
+          </ScrollReveal>
 
           {/* Right — photo */}
+          <ScrollReveal delay={150}>
           <div className="relative rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.15)]"
             style={{ minHeight: '460px' }}>
             <Image
@@ -306,13 +296,14 @@ export default async function HomePage() {
               <div className="text-cream/85 text-sm mt-2 drop-shadow">Resipi turun-temurun, bahan semula jadi</div>
             </div>
           </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* ══════════ MENU PREVIEW ══════════════════════════════════ */}
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-end justify-between mb-12">
+          <ScrollReveal className="flex items-end justify-between mb-12">
             <div>
               <div className="text-[0.62rem] font-semibold tracking-[4px] uppercase text-gold mb-3">Pilihan Kami</div>
               <h2 className="font-fraunces font-black text-4xl text-charcoal">Menu Popular</h2>
@@ -322,8 +313,9 @@ export default async function HomePage() {
                 hover:text-terra transition-colors">
               Lihat semua <span>→</span>
             </Link>
-          </div>
+          </ScrollReveal>
 
+          <ScrollReveal delay={120}>
           <div className="rounded-3xl border border-brown/8 overflow-hidden">
             {FEATURED.map((item, i) => (
               <div key={item.name}
@@ -351,13 +343,15 @@ export default async function HomePage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="text-terra font-bold text-sm">
-                    {item.price} <span className="text-muted font-normal text-xs">/ biji</span>
+                    {item.price} <span className="text-muted font-normal text-xs">/ pax</span>
                   </span>
                   <span className="text-muted/50 text-xs hidden sm:block">Min. 50</span>
                 </div>
               </div>
             ))}
           </div>
+
+          </ScrollReveal>
 
           <div className="text-center mt-8 md:hidden">
             <Link href="/menu" className="inline-flex items-center gap-1.5 text-forest font-semibold text-sm">
@@ -381,7 +375,7 @@ export default async function HomePage() {
           backgroundImage: 'radial-gradient(circle, #C9A84C 1px, transparent 1px)',
           backgroundSize: '30px 30px',
         }} />
-        <div className="relative max-w-2xl mx-auto px-6 text-center">
+        <ScrollReveal className="relative max-w-2xl mx-auto px-6 text-center">
           <div className="text-[0.62rem] font-semibold tracking-[4px] uppercase text-gold/50 mb-5">
             Tempahan Terbuka
           </div>
@@ -391,7 +385,7 @@ export default async function HomePage() {
           </h2>
           <p className="text-cream/45 mb-10 text-[0.9rem] leading-relaxed max-w-md mx-auto">
             Isi borang tempahan atau hubungi kami terus melalui WhatsApp.
-            Sedia melayan dari 50 hingga 200 biji.
+            Sedia melayan dari 50 hingga 200 pax.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/reservations"
@@ -406,7 +400,7 @@ export default async function HomePage() {
               WhatsApp Terus
             </a>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* WhatsApp FAB */}

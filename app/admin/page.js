@@ -485,7 +485,7 @@ function OverviewTab({ pw, onRefresh }) {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-forest font-bold text-sm">{r.pax} biji</span>
+                <span className="text-forest font-bold text-sm">{r.pax} pax</span>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLS[r.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                   {STATUS_LABEL[r.status] || r.status}
                 </span>
@@ -581,7 +581,7 @@ function ReservationsTab({ pw, onStatusChange }) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {[['Telefon',detail.phone],['Tarikh',detail.date],['Masa',detail.time],['Biji',`${detail.pax} biji`],['Anggaran', parsePrice(detail.notes) != null ? `RM ${parsePrice(detail.notes).toFixed(2)}` : '—'],['Cawangan',detail.branch],['Daftar',fmtDate(detail.created_at)]].map(([k,v]) => (
+              {[['Telefon',detail.phone],['Tarikh',detail.date],['Masa',detail.time],['Pax',`${detail.pax} pax`],['Anggaran', parsePrice(detail.notes) != null ? `RM ${parsePrice(detail.notes).toFixed(2)}` : '—'],['Cawangan',detail.branch],['Daftar',fmtDate(detail.created_at)]].map(([k,v]) => (
                 <div key={k}>
                   <div className="text-muted text-xs mb-0.5">{k}</div>
                   <div className="font-semibold text-charcoal text-sm">{v}</div>
@@ -662,7 +662,7 @@ function ReservationsTab({ pw, onStatusChange }) {
                       <div className="text-muted text-xs">{r.time}</div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="font-bold text-forest">{r.pax} biji</div>
+                      <div className="font-bold text-forest">{r.pax} pax</div>
                       {parsePrice(r.notes) != null && (
                         <div className="text-xs text-muted">RM {parsePrice(r.notes).toFixed(2)}</div>
                       )}
@@ -944,7 +944,7 @@ const DEFAULTS = [
   { page: 'home',    key: 'stats.kuih_types',   label: 'Stat: Jenis Kuih',     value: '10+' },
   { page: 'home',    key: 'stats.customers',    label: 'Stat: Pelanggan/Bln',  value: '500+' },
   { page: 'home',    key: 'about.p1',           label: 'Tentang Kami Para 1',  value: 'DKAMPUNG bermula dari dapur kecil di Taman Putra Perdana dengan satu matlamat — menghidupkan semula rasa kuih tradisional yang semakin dilupakan.' },
-  { page: 'home',    key: 'about.p2',           label: 'Tentang Kami Para 2',  value: 'Kini kami beroperasi di 3 cawangan, melayani tempahan kenduri dan majlis dari 50 hingga 200 biji dengan penghantaran segar setiap hari.' },
+  { page: 'home',    key: 'about.p2',           label: 'Tentang Kami Para 2',  value: 'Kini kami beroperasi di 3 cawangan, melayani tempahan kenduri dan majlis dari 50 hingga 200 pax dengan penghantaran segar setiap hari.' },
   { page: 'menu',    key: 'header.subtitle',    label: 'Menu Header Subtitle', value: 'Semua kuih dibuat segar setiap hari menggunakan bahan-bahan semula jadi pilihan.' },
   { page: 'contact', key: 'phone',              label: 'Telefon',              value: '+60 14-386 0742' },
   { page: 'contact', key: 'whatsapp',           label: 'WhatsApp Number',      value: '60143860742' },
