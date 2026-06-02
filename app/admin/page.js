@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { printHtml } from '@/lib/receipt'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function parsePrice(notes) {
@@ -603,6 +604,15 @@ function ReservationsTab({ pw, onStatusChange }) {
                 <option value="completed">Selesai</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+              <button onClick={() => {
+                const w = window.open('', '_blank')
+                w.document.write(printHtml(detail))
+                w.document.close()
+                w.print()
+              }}
+                className="bg-forest/8 text-forest border border-forest/20 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-forest/15 transition-colors">
+                Cetak Resit
+              </button>
               <button onClick={() => del(detail.id)}
                 className="bg-red-50 text-red-600 border border-red-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors">
                 Padam
