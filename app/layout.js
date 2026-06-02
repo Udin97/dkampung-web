@@ -2,6 +2,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import FooterWrapper from '@/components/FooterWrapper'
 import PageTracker from '@/components/PageTracker'
+import WhatsAppChat from '@/components/WhatsAppChat'
 
 export const metadata = {
   title: 'DKAMPUNG – Kuih Tradisional Terbaik',
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
         <PageTracker />
         <main>{children}</main>
         <FooterWrapper />
+        <WhatsAppChat />
       </body>
     </html>
   )
