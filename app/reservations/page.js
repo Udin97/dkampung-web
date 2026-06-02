@@ -83,7 +83,7 @@ function IconSelect({ icon, children, ...props }) {
 
 export default function ReservationsPage() {
   const [form, setForm]             = useState({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
-  const [branchNames, setBranchNames] = useState([])
+  const [branchNames, setBranchNames] = useState(['Taman Putra Perdana', 'Cyberjaya', 'Kota Warisan'])
   const [orderItems, setOrderItems] = useState({})
   const [specialNote, setSpecialNote] = useState('')
   const [menu, setMenu]             = useState(MENU_FALLBACK)
@@ -499,10 +499,7 @@ export default function ReservationsPage() {
               <IconSelect icon={<MapPin className="w-4 h-4" />}
                 name="branch" required value={form.branch} onChange={set}>
                 <option value="">– Pilih cawangan –</option>
-                {branchNames.length === 0
-                  ? <option disabled>Memuatkan...</option>
-                  : branchNames.map(b => <option key={b} value={b}>{b}</option>)
-                }
+                {branchNames.map(b => <option key={b} value={b}>{b}</option>)}
               </IconSelect>
             </Field>
           </div>
@@ -553,7 +550,6 @@ export default function ReservationsPage() {
                                 <Plus className="w-3 h-3" />
                               </button>
                             </div>
-                            <span className="text-[0.65rem] text-muted">Min. {minOrder} pax</span>
                           </div>
                         </div>
                       )

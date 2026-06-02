@@ -41,7 +41,7 @@ export async function POST(request) {
 
   const { data, error } = await supabaseAdmin
     .from('menu_items')
-    .insert([{ category_id, category_name, category_emoji, name, description, price: parseFloat(price), min_order: min_order || 50, image_url: image_url || null }])
+    .insert([{ category_id, category_name, category_emoji, name, description, price: parseFloat(price), min_order: min_order || 50, image_url: image_url || null, is_available: body.is_available !== false }])
     .select()
     .single()
 
