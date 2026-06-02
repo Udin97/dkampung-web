@@ -513,25 +513,12 @@ export default function ReservationsPage() {
             </div>
             <div className="mb-4">
               <Field label="Masa Ambil" required>
-                {availableSlots.length === 0 ? (
-                  <p className="text-sm text-muted py-2">Tiada masa tersedia. Sila hubungi kami terus.</p>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {availableSlots.map(t => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => { setForm(p => ({ ...p, time: t })); setError('') }}
-                        className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all duration-100 text-center
-                          ${form.time === t
-                            ? 'bg-forest text-cream border-forest shadow-sm scale-[1.03]'
-                            : 'bg-white text-charcoal border-brown/15 hover:border-forest/40 hover:bg-forest/5 active:scale-[0.97]'
-                          }`}>
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <select name="time" required value={form.time}
+                  onChange={e => { setForm(p => ({ ...p, time: e.target.value })); setError('') }}
+                  className={inputCls}>
+                  <option value="">-- Pilih masa --</option>
+                  {availableSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </Field>
             </div>
             <Field label="Cawangan Ambil" required>
