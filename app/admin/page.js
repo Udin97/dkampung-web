@@ -139,6 +139,27 @@ function Spinner() {
   )
 }
 
+// ── Toast stack ───────────────────────────────────────────────────────────────
+function ToastStack({ toasts }) {
+  if (!toasts.length) return null
+  return (
+    <div className="fixed top-5 right-5 z-[200] flex flex-col gap-2 pointer-events-none">
+      {toasts.map(t => (
+        <div key={t.id}
+          className={`flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold
+            animate-popIn pointer-events-auto min-w-[220px]
+            ${t.type === 'error' ? 'bg-red-600 text-white' : 'bg-forest text-cream'}`}>
+          {t.type === 'error'
+            ? <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            : <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+          }
+          <span>{t.msg}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
   const [pw, setPw]     = useState('')
@@ -503,7 +524,7 @@ function OverviewTab({ pw, onRefresh }) {
 }
 
 // ── Reservations ──────────────────────────────────────────────────────────────
-function ReservationsTab({ pw, onStatusChange }) {
+function ReservationsTab({ pw, onStatusChange, addToast, askConfirm }) {
   const ALL_TIME_SLOTS = [
     '7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM',
     '12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM',
@@ -520,7 +541,6 @@ function ReservationsTab({ pw, onStatusChange }) {
   const [receiptSent, setReceiptSent] = useState(false)
   const [enabledSlots, setEnabledSlots] = useState(new Set(ALL_TIME_SLOTS))
   const [slotSaving, setSlotSaving]     = useState(false)
-  const [slotSaved, setSlotSaved]       = useState(false)
   const [showSlotSettings, setShowSlotSettings] = useState(false)
 
   const load = useCallback(() => {
@@ -561,26 +581,28 @@ function ReservationsTab({ pw, onStatusChange }) {
     } catch (err) {
       setRows(p => p.map(r => r.id === id ? { ...r, status: prev } : r))
       if (detail?.id === id) setDetail(p => ({ ...p, status: prev }))
-      alert(`Gagal kemaskini status: ${err.message}`)
+      addToast(`Gagal kemaskini status: ${err.message}`, 'error')
     } finally {
       setBusy(null)
     }
   }
 
-  async function del(id) {
-    if (!confirm('Padam tempahan ini?')) return
-    try {
-      const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error || `HTTP ${res.status}`)
+  function del(id) {
+    askConfirm('Padam tempahan ini? Tindakan ini tidak boleh dibatalkan.', async () => {
+      try {
+        const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.error || `HTTP ${res.status}`)
+        }
+        setRows(p => p.filter(r => r.id !== id))
+        setDetail(null)
+        onStatusChange?.()
+        addToast('Tempahan berjaya dipadam')
+      } catch (err) {
+        addToast(`Gagal padam: ${err.message}`, 'error')
       }
-      setRows(p => p.filter(r => r.id !== id))
-      setDetail(null)
-      onStatusChange?.()
-    } catch (err) {
-      alert(`Gagal padam: ${err.message}`)
-    }
+    })
   }
 
   async function sendReceipt(id) {
@@ -597,8 +619,9 @@ function ReservationsTab({ pw, onStatusChange }) {
       }
       setReceiptSent(true)
       setTimeout(() => setReceiptSent(false), 3000)
+      addToast(`E-resit dihantar ke ${detail?.email || ''}`)
     } catch (err) {
-      alert(`Gagal hantar e-resit: ${err.message}`)
+      addToast(`Gagal hantar e-resit: ${err.message}`, 'error')
     } finally {
       setSendingReceipt(false)
     }
@@ -613,9 +636,8 @@ function ReservationsTab({ pw, onStatusChange }) {
         body: JSON.stringify({ page: 'reservations', key: 'available_times', value: JSON.stringify([...enabledSlots]) }),
       })
       if (!res.ok) throw new Error('Gagal simpan')
-      setSlotSaved(true)
-      setTimeout(() => setSlotSaved(false), 3000)
-    } catch { alert('Gagal simpan tetapan masa.') }
+      addToast('Tetapan masa berjaya disimpan')
+    } catch { addToast('Gagal simpan tetapan masa.', 'error') }
     finally { setSlotSaving(false) }
   }
 
@@ -680,7 +702,6 @@ function ReservationsTab({ pw, onStatusChange }) {
                 {slotSaving && <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin" />}
                 Simpan Tetapan
               </button>
-              {slotSaved && <span className="text-forest text-xs font-semibold">✓ Tetapan disimpan</span>}
               <button onClick={() => setEnabledSlots(new Set(ALL_TIME_SLOTS))}
                 className="text-muted text-xs hover:text-charcoal transition-colors ml-auto">
                 Pilih semua
@@ -955,7 +976,7 @@ function MenuForm({ data, onChange, onSave, onCancel, saving, pw }) {
   )
 }
 
-function MenuTab({ pw }) {
+function MenuTab({ pw, addToast, askConfirm }) {
   const [items, setItems]       = useState([])
   const [loading, setLoading]   = useState(true)
   const [modal, setModal]       = useState(null)   // null | 'add' | 'edit'
@@ -990,25 +1011,28 @@ function MenuTab({ pw }) {
         setItems(p => p.map(i => i.id === editId ? data.item : i))
       }
       closeModal()
+      addToast(modal === 'add' ? 'Item berjaya ditambah' : 'Item berjaya dikemaskini')
     } catch (err) {
-      alert(`Gagal simpan: ${err.message}`)
+      addToast(`Gagal simpan: ${err.message}`, 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  async function del(id) {
-    if (!confirm('Padam item menu ini?')) return
-    try {
-      const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error || `HTTP ${res.status}`)
+  function del(id) {
+    askConfirm('Padam item menu ini? Tindakan ini tidak boleh dibatalkan.', async () => {
+      try {
+        const res = await fetch(`/api/menu/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.error || `HTTP ${res.status}`)
+        }
+        setItems(p => p.filter(i => i.id !== id))
+        addToast('Item berjaya dipadam')
+      } catch (err) {
+        addToast(`Gagal padam: ${err.message}`, 'error')
       }
-      setItems(p => p.filter(i => i.id !== id))
-    } catch (err) {
-      alert(`Gagal padam: ${err.message}`)
-    }
+    })
   }
 
   const grouped = CATS.map(cat => ({ ...cat, items: items.filter(i => i.category_id === cat.id) }))
@@ -1094,7 +1118,14 @@ const DEFAULTS = [
   { page: 'contact', key: 'email',              label: 'Emel',                 value: 'dkampung@gmail.com' },
 ]
 
-function ContentTab({ pw }) {
+const BLANK_BRANCH = { name: '', address: '', phone: '', hours: '', mapQuery: '' }
+
+function normalizeBranch(b) {
+  if (typeof b === 'string') return { name: b, address: '', phone: '', hours: '', mapQuery: b }
+  return { name: b.name||'', address: b.address||'', phone: b.phone||'', hours: b.hours||'', mapQuery: b.mapQuery||b.name||'' }
+}
+
+function ContentTab({ pw, addToast, askConfirm }) {
   const [content, setContent] = useState([])
   const [loading, setLoading] = useState(true)
   const [editKey, setEditKey] = useState(null)
@@ -1103,7 +1134,13 @@ function ContentTab({ pw }) {
   const [group, setGroup]     = useState('home')
 
   // Footer-specific state
-  const [fBranches,  setFBranches]  = useState(['Taman Putra Perdana','Cyberjaya','Kota Warisan'])
+  const [fBranches,  setFBranches]  = useState([
+    { name:'Taman Putra Perdana', address:'', phone:'', hours:'', mapQuery:'Taman Putra Perdana Puchong' },
+    { name:'Cyberjaya',           address:'', phone:'', hours:'', mapQuery:'Cyberjaya Selangor'          },
+    { name:'Kota Warisan',        address:'', phone:'', hours:'', mapQuery:'Kota Warisan Selangor'       },
+  ])
+  const [mapPreviews, setMapPreviews] = useState({})
+  const [mapLoaded,   setMapLoaded]   = useState({})
   const [fNavLinks,  setFNavLinks]  = useState([
     { href:'/menu', label:'Menu Kuih' },{ href:'/reservations', label:'Buat Tempahan' },
     { href:'/contact', label:'Hubungi Kami' },{ href:'/admin', label:'Admin' },
@@ -1111,7 +1148,6 @@ function ContentTab({ pw }) {
   const [fHoursDays, setFHoursDays] = useState('Isnin – Ahad')
   const [fHoursTime, setFHoursTime] = useState('7:00 pagi – 11:00 malam')
   const [fSaving,    setFSaving]    = useState({})
-  const [fSaved,     setFSaved]     = useState({})
 
   useEffect(() => {
     fetch('/api/content').then(r => r.json()).then(d => {
@@ -1119,7 +1155,7 @@ function ContentTab({ pw }) {
       setContent(DEFAULTS.map(def => { const found = db.find(c => c.page === def.page && c.key === def.key); return found ? { ...def, value: found.value } : def }))
       // Load footer data
       const get = key => db.find(c => c.page === 'footer' && c.key === key)?.value
-      try { const v = get('branches');  if (v) setFBranches(JSON.parse(v)) } catch {}
+      try { const v = get('branches'); if (v) { const p = JSON.parse(v); setFBranches(Array.isArray(p) ? p.map(normalizeBranch) : []) } } catch {}
       try { const v = get('nav_links'); if (v) setFNavLinks(JSON.parse(v))  } catch {}
       if (get('hours_days')) setFHoursDays(get('hours_days'))
       if (get('hours_time')) setFHoursTime(get('hours_time'))
@@ -1129,18 +1165,26 @@ function ContentTab({ pw }) {
 
   async function save(page, key) {
     setSaving(true)
-    await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page, key, value: editVal }) })
-    setContent(p => p.map(c => c.page === page && c.key === key ? { ...c, value: editVal } : c))
-    setEditKey(null); setSaving(false)
+    try {
+      await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page, key, value: editVal }) })
+      setContent(p => p.map(c => c.page === page && c.key === key ? { ...c, value: editVal } : c))
+      setEditKey(null)
+      addToast('Berjaya disimpan')
+    } catch {
+      addToast('Gagal menyimpan', 'error')
+    }
+    setSaving(false)
   }
 
   async function saveFooter(key, value) {
     setFSaving(p => ({ ...p, [key]: true }))
     try {
-      await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page: 'footer', key, value }) })
-      setFSaved(p => ({ ...p, [key]: true }))
-      setTimeout(() => setFSaved(p => ({ ...p, [key]: false })), 2500)
-    } catch {}
+      const res = await fetch('/api/content', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` }, body: JSON.stringify({ page: 'footer', key, value }) })
+      if (!res.ok) throw new Error('Gagal menyimpan')
+      addToast('Berjaya disimpan')
+    } catch (err) {
+      addToast(err.message || 'Gagal menyimpan', 'error')
+    }
     setFSaving(p => ({ ...p, [key]: false }))
   }
 
@@ -1169,7 +1213,6 @@ function ContentTab({ pw }) {
                 <div className="font-semibold text-charcoal text-sm">Navigasi</div>
                 <div className="text-muted text-xs mt-0.5">Pautan yang terpapar di footer</div>
               </div>
-              {fSaved.nav_links && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
             </div>
             <div className="p-4 space-y-2">
               {fNavLinks.map((link, i) => (
@@ -1200,33 +1243,103 @@ function ContentTab({ pw }) {
 
           {/* ── CAWANGAN ── */}
           <div className="bg-white rounded-2xl border border-brown/8 overflow-hidden">
-            <div className="px-5 py-4 border-b border-brown/6 flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-charcoal text-sm">Cawangan</div>
-                <div className="text-muted text-xs mt-0.5">Senarai cawangan di footer</div>
-              </div>
-              {fSaved.branches && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
+            <div className="px-5 py-4 border-b border-brown/6">
+              <div className="font-semibold text-charcoal text-sm">Cawangan</div>
+              <div className="text-muted text-xs mt-0.5">Urus maklumat cawangan — nama, alamat, telefon, waktu, dan peta</div>
             </div>
-            <div className="p-4 space-y-2">
+            <div className="p-4 space-y-3">
               {fBranches.map((branch, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input value={branch} onChange={e => setFBranches(p => p.map((b,j) => j===i ? e.target.value : b))}
-                    placeholder="Nama cawangan" className={`${inputCls} flex-1`} />
-                  <button onClick={() => setFBranches(p => p.filter((_,j) => j!==i))}
-                    className="text-red-400 hover:text-red-600 text-xs px-2 py-1.5 rounded-lg hover:bg-red-50 transition-colors shrink-0">
-                    Padam
-                  </button>
+                <div key={i} className="border border-brown/12 rounded-xl overflow-hidden">
+                  {/* Card header */}
+                  <div className="px-4 py-2.5 bg-stone/60 flex items-center justify-between">
+                    <span className="font-semibold text-charcoal text-sm">{branch.name || `Cawangan ${i + 1}`}</span>
+                    <button
+                      onClick={() => askConfirm(`Padam cawangan "${branch.name || `Cawangan ${i+1}`}"?`, () => {
+                        setFBranches(p => p.filter((_,j) => j !== i))
+                        setMapPreviews(p => { const n = {...p}; delete n[i]; return n })
+                        setMapLoaded(p => { const n = {...p}; delete n[i]; return n })
+                      })}
+                      className="text-red-400 hover:text-red-600 text-xs font-semibold px-2.5 py-1 rounded-lg hover:bg-red-50 transition-colors">
+                      Padam
+                    </button>
+                  </div>
+                  {/* Fields */}
+                  <div className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[0.65rem] font-semibold text-muted uppercase tracking-wide block mb-1.5">Nama Cawangan</label>
+                        <input value={branch.name}
+                          onChange={e => setFBranches(p => p.map((b,j) => j===i ? {...b, name: e.target.value} : b))}
+                          placeholder="cth: Cyberjaya" className={`${inputCls} w-full`} />
+                      </div>
+                      <div>
+                        <label className="text-[0.65rem] font-semibold text-muted uppercase tracking-wide block mb-1.5">No. Telefon</label>
+                        <input value={branch.phone}
+                          onChange={e => setFBranches(p => p.map((b,j) => j===i ? {...b, phone: e.target.value} : b))}
+                          placeholder="+60 14-386 0742" className={`${inputCls} w-full`} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[0.65rem] font-semibold text-muted uppercase tracking-wide block mb-1.5">Alamat</label>
+                      <input value={branch.address}
+                        onChange={e => setFBranches(p => p.map((b,j) => j===i ? {...b, address: e.target.value} : b))}
+                        placeholder="cth: Taman Putra Perdana, Puchong, Selangor" className={`${inputCls} w-full`} />
+                    </div>
+                    <div>
+                      <label className="text-[0.65rem] font-semibold text-muted uppercase tracking-wide block mb-1.5">Waktu Operasi</label>
+                      <input value={branch.hours}
+                        onChange={e => setFBranches(p => p.map((b,j) => j===i ? {...b, hours: e.target.value} : b))}
+                        placeholder="cth: Isnin – Ahad, 7:00 pagi – 11:00 malam" className={`${inputCls} w-full`} />
+                    </div>
+                    <div>
+                      <label className="text-[0.65rem] font-semibold text-muted uppercase tracking-wide block mb-1.5">Carian Lokasi (Google Maps)</label>
+                      <div className="flex gap-2">
+                        <input value={branch.mapQuery}
+                          onChange={e => setFBranches(p => p.map((b,j) => j===i ? {...b, mapQuery: e.target.value} : b))}
+                          placeholder="cth: Taman Putra Perdana Puchong" className={`${inputCls} flex-1`} />
+                        <button
+                          onClick={() => {
+                            const q = branch.mapQuery || branch.address || branch.name
+                            setMapLoaded(p => ({...p, [i]: false}))
+                            setMapPreviews(p => ({...p, [i]: q}))
+                          }}
+                          className="bg-forest/8 text-forest text-xs font-semibold px-3 py-2 rounded-xl hover:bg-forest/16 transition-colors whitespace-nowrap border border-forest/20 shrink-0">
+                          🗺 Lihat Peta
+                        </button>
+                      </div>
+                    </div>
+                    {/* Map preview */}
+                    {mapPreviews[i] && (
+                      <div className="relative rounded-xl overflow-hidden h-44 bg-stone border border-brown/10">
+                        {!mapLoaded[i] && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-stone z-10">
+                            <div className="w-6 h-6 border-2 border-forest/20 border-t-forest rounded-full animate-spin" />
+                          </div>
+                        )}
+                        <iframe
+                          key={mapPreviews[i]}
+                          src={`https://maps.google.com/maps?q=${encodeURIComponent(mapPreviews[i])}&output=embed`}
+                          width="100%" height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title={`Peta ${branch.name}`}
+                          onLoad={() => setMapLoaded(p => ({...p, [i]: true}))}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
               <div className="flex items-center gap-2 pt-1">
-                <button onClick={() => setFBranches(p => [...p, ''])}
+                <button onClick={() => setFBranches(p => [...p, { ...BLANK_BRANCH }])}
                   className="text-forest text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-forest/8 transition-colors border border-forest/20">
                   + Tambah Cawangan
                 </button>
                 <button onClick={() => saveFooter('branches', JSON.stringify(fBranches))} disabled={fSaving.branches}
                   className="bg-charcoal text-cream px-5 py-1.5 rounded-xl text-sm font-semibold hover:bg-forest transition-colors disabled:opacity-50 ml-auto flex items-center gap-2">
                   {fSaving.branches && <span className="w-3.5 h-3.5 border-[1.5px] border-cream/30 border-t-cream rounded-full animate-spin"/>}
-                  Simpan
+                  Simpan Semua Cawangan
                 </button>
               </div>
             </div>
@@ -1239,7 +1352,6 @@ function ContentTab({ pw }) {
                 <div className="font-semibold text-charcoal text-sm">Waktu Operasi</div>
                 <div className="text-muted text-xs mt-0.5">Hari dan masa operasi</div>
               </div>
-              {(fSaved.hours_days || fSaved.hours_time) && <span className="text-forest text-xs font-semibold">✓ Disimpan</span>}
             </div>
             <div className="p-4 space-y-3">
               <div>
@@ -1408,7 +1520,19 @@ export default function AdminPage() {
   const [tab, setTab] = useState('overview')
   const [tick, setTick] = useState(0)
   const [now, setNow] = useState(new Date())
+  const [toasts, setToasts] = useState([])
+  const [pendingConfirm, setPendingConfirm] = useState(null)
   const bump = useCallback(() => setTick(t => t + 1), [])
+
+  const addToast = useCallback((msg, type = 'success') => {
+    const id = Date.now()
+    setToasts(p => [...p, { id, msg, type }])
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3000)
+  }, [])
+
+  const askConfirm = useCallback((message, onConfirm) => {
+    setPendingConfirm({ message, onConfirm })
+  }, [])
 
   useEffect(() => {
     const saved = sessionStorage.getItem('adminPw')
@@ -1428,6 +1552,27 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F0E8]">
+      <ToastStack toasts={toasts} />
+
+      {/* ── Confirmation modal ── */}
+      <Modal open={!!pendingConfirm} onClose={() => setPendingConfirm(null)} title="Pengesahan">
+        {pendingConfirm && (
+          <div>
+            <p className="text-charcoal text-sm leading-relaxed mb-6">{pendingConfirm.message}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setPendingConfirm(null)}
+                className="flex-1 border border-brown/20 text-charcoal px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone transition-colors">
+                Batal
+              </button>
+              <button onClick={() => { pendingConfirm.onConfirm(); setPendingConfirm(null) }}
+                className="flex-1 bg-red-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">
+                Sahkan Padam
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       {/* ── Sidebar ── */}
       <aside className="fixed left-0 top-0 bottom-0 w-14 md:w-[220px] bg-charcoal flex flex-col z-20">
         {/* Brand */}
@@ -1522,9 +1667,9 @@ export default function AdminPage() {
         {/* Content */}
         <div className="p-6">
           {tab === 'overview'     && <OverviewTab     key={tick} pw={pw} onRefresh={bump} />}
-          {tab === 'reservations' && <ReservationsTab pw={pw} onStatusChange={bump} />}
-          {tab === 'menu'         && <MenuTab         pw={pw} />}
-          {tab === 'content'      && <ContentTab      pw={pw} />}
+          {tab === 'reservations' && <ReservationsTab pw={pw} onStatusChange={bump} addToast={addToast} askConfirm={askConfirm} />}
+          {tab === 'menu'         && <MenuTab         pw={pw} addToast={addToast} askConfirm={askConfirm} />}
+          {tab === 'content'      && <ContentTab      pw={pw} addToast={addToast} askConfirm={askConfirm} />}
           {tab === 'analytics'    && <AnalyticsTab    pw={pw} />}
         </div>
       </div>

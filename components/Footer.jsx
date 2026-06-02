@@ -85,7 +85,7 @@ export default async function Footer() {
             <div className="text-[0.62rem] font-semibold tracking-[3px] uppercase text-gold/60 mb-5">Cawangan</div>
             <div className="flex flex-col gap-3">
               {branches.map((b, i) => (
-                <span key={i} className="text-sm text-cream/40">{b}</span>
+                <span key={i} className="text-sm text-cream/40">{typeof b === 'string' ? b : b.name}</span>
               ))}
             </div>
           </div>

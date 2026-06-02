@@ -14,11 +14,6 @@ const WhatsAppIcon = ({ className }) => (
   </svg>
 )
 
-const BRANCHES = [
-  'Taman Putra Perdana',
-  'Cyberjaya',
-  'Kota Warisan',
-]
 
 const TIME_SLOTS = [
   '7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM',
@@ -88,6 +83,7 @@ function IconSelect({ icon, children, ...props }) {
 
 export default function ReservationsPage() {
   const [form, setForm]             = useState({ name:'', email:'', phone:'', date:'', time:'', branch:'' })
+  const [branchNames, setBranchNames] = useState([])
   const [orderItems, setOrderItems] = useState({})
   const [specialNote, setSpecialNote] = useState('')
   const [menu, setMenu]             = useState(MENU_FALLBACK)
@@ -106,6 +102,13 @@ export default function ReservationsPage() {
 
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
+
+  useEffect(() => {
+    fetch('/api/branches')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.branches?.length) setBranchNames(d.branches.map(b => b.name)) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/content')
@@ -496,7 +499,10 @@ export default function ReservationsPage() {
               <IconSelect icon={<MapPin className="w-4 h-4" />}
                 name="branch" required value={form.branch} onChange={set}>
                 <option value="">– Pilih cawangan –</option>
-                {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                {branchNames.length === 0
+                  ? <option disabled>Memuatkan...</option>
+                  : branchNames.map(b => <option key={b} value={b}>{b}</option>)
+                }
               </IconSelect>
             </Field>
           </div>

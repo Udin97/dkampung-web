@@ -1,38 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-
-const BRANCHES = [
-  {
-    name:    'Taman Putra Perdana',
-    address: 'Taman Putra Perdana, Puchong, Selangor',
-    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
-    num:     '01',
-    mapSrc:  'https://maps.google.com/maps?q=Taman+Putra+Perdana+Puchong&output=embed',
-  },
-  {
-    name:    'Cyberjaya',
-    address: 'Cyberjaya, Selangor',
-    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
-    num:     '02',
-    mapSrc:  'https://maps.google.com/maps?q=Cyberjaya+Selangor&output=embed',
-  },
-  {
-    name:    'Kota Warisan',
-    address: 'Kota Warisan, Selangor',
-    hours:   'Isnin – Ahad, 7:00 pagi – 11:00 malam',
-    num:     '03',
-    mapSrc:  'https://maps.google.com/maps?q=Kota+Warisan+Selangor&output=embed',
-  },
-]
+import { useState, useEffect } from 'react'
 
 const inputCls = `w-full bg-stone border border-brown/15 rounded-xl px-4 py-3 text-sm text-ink
   placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-forest/20
   focus:border-forest/30 transition-all`
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent]  = useState(false)
+  const [form, setForm]         = useState({ name: '', email: '', message: '' })
+  const [sent, setSent]         = useState(false)
+  const [branches, setBranches] = useState([])
+  const [loadingBranches, setLoadingBranches] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/branches')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.branches) setBranches(d.branches) })
+      .catch(() => {})
+      .finally(() => setLoadingBranches(false))
+  }, [])
 
   const set = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
 
@@ -142,50 +128,76 @@ export default function ContactPage() {
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {BRANCHES.map(b => (
-              <div key={b.name}
-                className="bg-white rounded-3xl overflow-hidden border border-brown/8
-                  hover:shadow-[0_8px_32px_rgba(0,0,0,0.07)] transition-shadow duration-300 flex flex-col">
+            {loadingBranches
+              ? [0,1,2].map(i => (
+                  <div key={i} className="bg-white rounded-3xl overflow-hidden border border-brown/8 animate-pulse">
+                    <div className="bg-forest/20 h-24" />
+                    <div className="bg-stone h-44" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-3 bg-stone rounded-full w-3/4" />
+                      <div className="h-3 bg-stone rounded-full w-1/2" />
+                    </div>
+                  </div>
+                ))
+              : branches.map((b, idx) => {
+                  const num    = String(idx + 1).padStart(2, '0')
+                  const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(b.mapQuery || b.name)}&output=embed`
+                  return (
+                    <div key={b.name}
+                      className="bg-white rounded-3xl overflow-hidden border border-brown/8
+                        hover:shadow-[0_8px_32px_rgba(0,0,0,0.07)] transition-shadow duration-300 flex flex-col">
 
-                {/* Card header with number */}
-                <div className="bg-forest relative overflow-hidden px-6 py-7">
-                  <div className="absolute right-4 bottom-0 font-fraunces font-black text-6xl text-white/5 leading-none select-none">
-                    {b.num}
-                  </div>
-                  <div className="relative">
-                    <div className="text-gold/60 text-[0.6rem] tracking-[3px] uppercase mb-2">Cawangan {b.num}</div>
-                    <h3 className="font-fraunces font-semibold text-cream leading-tight text-[1.05rem]">
-                      {b.name}
-                    </h3>
-                  </div>
-                </div>
+                      {/* Card header */}
+                      <div className="bg-forest relative overflow-hidden px-6 py-7">
+                        <div className="absolute right-4 bottom-0 font-fraunces font-black text-6xl text-white/5 leading-none select-none">
+                          {num}
+                        </div>
+                        <div className="relative">
+                          <div className="text-gold/60 text-[0.6rem] tracking-[3px] uppercase mb-2">Cawangan {num}</div>
+                          <h3 className="font-fraunces font-semibold text-cream leading-tight text-[1.05rem]">{b.name}</h3>
+                        </div>
+                      </div>
 
-                {/* Map */}
-                <div className="h-44 bg-stone">
-                  <iframe src={b.mapSrc} width="100%" height="100%"
-                    style={{ border: 0 }} allowFullScreen loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`Peta ${b.name}`} />
-                </div>
+                      {/* Map */}
+                      <div className="h-44 bg-stone">
+                        <iframe src={mapSrc} width="100%" height="100%"
+                          style={{ border: 0 }} allowFullScreen loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title={`Peta ${b.name}`} />
+                      </div>
 
-                {/* Details */}
-                <div className="p-5 flex-1">
-                  <div className="flex items-start gap-2.5 mb-2.5">
-                    <svg className="w-3.5 h-3.5 text-muted mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                    <span className="text-muted text-xs leading-relaxed">{b.address}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <svg className="w-3.5 h-3.5 text-muted shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2"/>
-                    </svg>
-                    <span className="text-muted text-xs">{b.hours}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+                      {/* Details */}
+                      <div className="p-5 flex-1">
+                        {b.address && (
+                          <div className="flex items-start gap-2.5 mb-2.5">
+                            <svg className="w-3.5 h-3.5 text-muted mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span className="text-muted text-xs leading-relaxed">{b.address}</span>
+                          </div>
+                        )}
+                        {b.hours && (
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-3.5 h-3.5 text-muted shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2"/>
+                            </svg>
+                            <span className="text-muted text-xs">{b.hours}</span>
+                          </div>
+                        )}
+                        {b.phone && (
+                          <div className="flex items-center gap-2.5 mt-2.5">
+                            <svg className="w-3.5 h-3.5 text-muted shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <a href={`tel:${b.phone.replace(/\s/g,'')}`} className="text-muted text-xs hover:text-forest transition-colors">{b.phone}</a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+            }
           </div>
         </div>
 
