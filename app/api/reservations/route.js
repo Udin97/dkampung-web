@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { emailHtml } from '@/lib/receipt'
+import { isAdmin } from '@/lib/session'
 
 // Create a server-side Supabase client (uses env vars directly — not exposed to browser)
 const supabase = createClient(
@@ -58,8 +59,10 @@ export async function POST(request) {
   }
 }
 
-// GET /api/reservations — called by the Admin page
-export async function GET() {
+// GET /api/reservations — admin only
+export async function GET(request) {
+  if (!await isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { data, error } = await supabase
     .from('reservations')
     .select('*')
