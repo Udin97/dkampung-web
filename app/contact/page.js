@@ -8,14 +8,13 @@ const inputCls = `w-full bg-stone border border-brown/15 rounded-xl px-4 py-3 te
   placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-forest/20
   focus:border-forest/30 transition-all`
 
+const SWR_STATIC = { dedupingInterval: 3600000, revalidateOnFocus: false }
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [sent, setSent] = useState(false)
 
-  const { data: branchesData, isLoading: loadingBranches } = useSWR(
-    '/api/branches', fetcher,
-    { dedupingInterval: 3_600_000, revalidateOnFocus: false }
-  )
+  const { data: branchesData, isLoading: loadingBranches } = useSWR('/api/branches', fetcher, SWR_STATIC)
   const branches = branchesData?.branches || []
 
   const set = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))

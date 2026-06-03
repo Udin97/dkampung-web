@@ -47,6 +47,9 @@ const MENU_FALLBACK = [
 
 const MONTHS_SHORT = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis']
 
+const SWR_STATIC = { dedupingInterval: 3600000, revalidateOnFocus: false }
+const SWR_SEMI   = { dedupingInterval: 300000,  revalidateOnFocus: false }
+
 function Field({ label, required, children, hint }) {
   return (
     <div>
@@ -102,12 +105,9 @@ export default function ReservationsPage() {
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 3)
 
-  const SWR_OPTS_STATIC = { dedupingInterval: 3_600_000, revalidateOnFocus: false }
-  const SWR_OPTS_SEMI   = { dedupingInterval: 300_000,   revalidateOnFocus: false }
-
-  const { data: branchesData  } = useSWR('/api/branches', fetcher, SWR_OPTS_STATIC)
-  const { data: contentData   } = useSWR('/api/content',  fetcher, SWR_OPTS_SEMI)
-  const { data: menuData      } = useSWR('/api/menu',     fetcher, SWR_OPTS_SEMI)
+  const { data: branchesData  } = useSWR('/api/branches', fetcher, SWR_STATIC)
+  const { data: contentData   } = useSWR('/api/content',  fetcher, SWR_SEMI)
+  const { data: menuData      } = useSWR('/api/menu',     fetcher, SWR_SEMI)
 
   const branchNames = useMemo(
     () => branchesData?.branches?.map(b => b.name) || ['Taman Putra Perdana', 'Cyberjaya', 'Kota Warisan'],
